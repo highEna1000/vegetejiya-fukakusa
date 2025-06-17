@@ -3,17 +3,140 @@
 {% block title %}ログイン{% endblock %}
 
 {% block content %}
-  <h1>ログイン</h1>
-  <form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="form-group">
-      {{ form.username.label }}<br>
-      {{ form.username(size=32) }}
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>スキルチェッカー</h1>
+        <p class="login-subtitle">ログインしてください</p>
+      </div>
+      
+      <form method="POST" class="login-form">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.username.label }}
+          {{ form.username(placeholder="ユーザー名を入力") }}
+        </div>
+        <div class="form-group">
+          {{ form.password.label }}
+          {{ form.password(placeholder="パスワードを入力") }}
+        </div>
+        {{ form.submit(class="btn btn-login") }}
+      </form>
+      
+      <div class="login-footer">
+        <small>デモ用: admin / password</small>
+      </div>
     </div>
-    <div class="form-group">
-      {{ form.password.label }}<br>
-      {{ form.password(size=32) }}
-    </div>
-    {{ form.submit(class="btn") }}
-  </form>
+  </div>
+
+  <style>
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 60vh;
+      padding: 2em 0;
+    }
+    
+    .login-card {
+      background: white;
+      padding: 2.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      border-top: 4px solid #4a69bd;
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+    
+    .login-header h1 {
+      margin: 0 0 0.5em 0;
+      color: #4a69bd;
+      font-size: 1.8em;
+    }
+    
+    .login-subtitle {
+      color: #6c757d;
+      margin: 0;
+      font-size: 0.95em;
+    }
+    
+    .login-form .form-group {
+      margin-bottom: 1.5em;
+    }
+    
+    .login-form input[type="text"],
+    .login-form input[type="password"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .login-form input:focus {
+      border-color: #4a69bd;
+      box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
+      outline: none;
+    }
+    
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 1em;
+    }
+    
+    .login-footer {
+      text-align: center;
+      margin-top: 1.5em;
+      padding-top: 1em;
+      border-top: 1px solid #eee;
+    }
+    
+    .login-footer small {
+      color: #6c757d;
+      background: #f8f9fa;
+      padding: 0.5em 1em;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+      .login-container {
+        padding: 1em;
+        min-height: 50vh;
+      }
+      
+      .login-card {
+        padding: 2em 1.5em;
+        border-radius: 8px;
+        margin: 0;
+      }
+      
+      .login-header h1 {
+        font-size: 1.5em;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 1.5em 1em;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+      
+      .login-container {
+        padding: 0.5em;
+      }
+    }
+  </style>
 {% endblock %}

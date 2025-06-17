@@ -3,30 +3,139 @@
 {% block title %}ユーザー編集{% endblock %}
 
 {% block content %}
-  <h2>ユーザー編集</h2>
-  <div style="max-width: 400px;">
-    <form method="POST">
-      {{ form.hidden_tag() }}
-      <div class="form-group">
-        {{ form.username.label }}<br>
-        {{ form.username() }}
-      </div>
-      <div class="form-group">
-        {{ form.password.label }}<br>
-        {{ form.password() }}
-      </div>
-      <div class="form-group">
-        {{ form.confirm_password.label }}<br>
-        {{ form.confirm_password() }}
-      </div>
-      <div class="form-group">
-        {{ form.role.label }}<br>
-        {{ form.role() }}
-      </div>
-      <div style="margin-top: 20px;">
-        {{ form.submit(class="btn") }}
-        <a href="{{ url_for('manage_users') }}" class="btn" style="margin-left: 10px;">キャンセル</a>
-      </div>
-    </form>
+  <div class="edit-user-container">
+    <h2>ユーザー編集</h2>
+    
+    <div class="edit-form-card">
+      <form method="POST" class="edit-user-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+          {{ form.username.label }}
+          {{ form.username() }}
+          <small class="form-help">ユーザー名は変更できません</small>
+        </div>
+        
+        <div class="form-group">
+          {{ form.password.label }}
+          {{ form.password() }}
+          <small class="form-help">変更する場合のみ入力してください</small>
+        </div>
+        
+        <div class="form-group">
+          {{ form.confirm_password.label }}
+          {{ form.confirm_password() }}
+        </div>
+        
+        <div class="form-group">
+          {{ form.role.label }}
+          {{ form.role() }}
+        </div>
+        
+        <div class="form-actions">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">キャンセル</a>
+        </div>
+      </form>
+    </div>
   </div>
+
+  <style>
+    .edit-user-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .edit-user-container h2 {
+      text-align: center;
+      margin-bottom: 1.5em;
+      color: #4a69bd;
+    }
+    
+    .edit-form-card {
+      background: #f8f9fa;
+      padding: 2em;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .edit-user-form .form-group {
+      margin-bottom: 1.5em;
+    }
+    
+    .form-help {
+      display: block;
+      margin-top: 0.3em;
+      color: #6c757d;
+      font-size: 0.875em;
+      font-style: italic;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 1em;
+      margin-top: 2em;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn-primary {
+      background-color: #4a69bd;
+      border-color: #4a69bd;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3c5aa6;
+      border-color: #3c5aa6;
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      border-color: #6c757d;
+      color: white;
+      text-decoration: none;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+      border-color: #5a6268;
+      color: white;
+    }
+    
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+      .edit-user-container {
+        max-width: 100%;
+        margin: 0;
+      }
+      
+      .edit-form-card {
+        padding: 1.5em;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+      
+      .form-actions {
+        flex-direction: column;
+      }
+      
+      .form-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5em;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .edit-form-card {
+        padding: 1em;
+      }
+      
+      .edit-user-container h2 {
+        font-size: 1.3em;
+        margin-bottom: 1em;
+      }
+    }
+  </style>
 {% endblock %}

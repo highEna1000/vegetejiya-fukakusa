@@ -3,68 +3,253 @@
 {% block title %}ユーザー管理{% endblock %}
 
 {% block content %}
-  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-    <div style="width: 60%;">
+  <div class="admin-layout">
+    <!-- ユーザー一覧セクション -->
+    <div class="users-section">
       <h2>ユーザー一覧</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ユーザー名</th>
-            <th>権限</th>
-            <th>順序</th>
-            <th colspan="2">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in users %}
-          <tr>
-            <td>{{ user.username }}</td>
-            <td>{{ '管理者' if user.role == 'admin' else 'スタッフ' }}</td>
-            <td style="width: 100px; text-align: center;">
+      
+      <!-- モバイル用カード表示 -->
+      <div class="mobile-user-cards">
+        {% for user in users %}
+        <div class="user-card">
+          <div class="user-info">
+            <h3>{{ user.username }}</h3>
+            <span class="role-badge {{ 'admin' if user.role == 'admin' else 'staff' }}">
+              {{ '管理者' if user.role == 'admin' else 'スタッフ' }}
+            </span>
+          </div>
+          
+          <div class="user-actions">
+            <div class="order-controls">
               {% if not loop.first %}
-              <a href="{{ url_for('move_user', user_id=user.id, direction='up') }}" class="btn" style="font-size: 12px; padding: 2px 6px; margin: 1px;">↑</a>
+              <a href="{{ url_for('move_user', user_id=user.id, direction='up') }}" class="btn btn-small btn-inline">↑</a>
               {% endif %}
               {% if not loop.last %}
-              <a href="{{ url_for('move_user', user_id=user.id, direction='down') }}" class="btn" style="font-size: 12px; padding: 2px 6px; margin: 1px;">↓</a>
+              <a href="{{ url_for('move_user', user_id=user.id, direction='down') }}" class="btn btn-small btn-inline">↓</a>
               {% endif %}
-            </td>
-            <td style="width: 80px;">
-              <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn">編集</a>
-            </td>
-            <td style="width: 80px;">
+            </div>
+            
+            <div class="action-buttons">
+              <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-small">編集</a>
               {% if user.id != current_user.id %}
-              <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('本当にこのユーザーを削除しますか？');">
-                <input type="submit" value="削除" class="btn btn-danger">
+              <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" 
+                    onsubmit="return confirm('本当にこのユーザーを削除しますか？');" style="display: inline;">
+                <input type="submit" value="削除" class="btn btn-danger btn-small">
               </form>
               {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <!-- デスクトップ用テーブル表示 -->
+      <div class="desktop-user-table">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ユーザー名</th>
+                <th>権限</th>
+                <th>順序</th>
+                <th colspan="2">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+              <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ '管理者' if user.role == 'admin' else 'スタッフ' }}</td>
+                <td style="width: 100px; text-align: center;">
+                  {% if not loop.first %}
+                  <a href="{{ url_for('move_user', user_id=user.id, direction='up') }}" class="btn btn-small" style="font-size: 12px; padding: 2px 6px; margin: 1px;">↑</a>
+                  {% endif %}
+                  {% if not loop.last %}
+                  <a href="{{ url_for('move_user', user_id=user.id, direction='down') }}" class="btn btn-small" style="font-size: 12px; padding: 2px 6px; margin: 1px;">↓</a>
+                  {% endif %}
+                </td>
+                <td style="width: 80px;">
+                  <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-small">編集</a>
+                </td>
+                <td style="width: 80px;">
+                  {% if user.id != current_user.id %}
+                  <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('本当にこのユーザーを削除しますか？');">
+                    <input type="submit" value="削除" class="btn btn-danger btn-small">
+                  </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div style="width: 35%;">
+    
+    <!-- 新規ユーザー追加セクション -->
+    <div class="add-user-section">
       <h2>新規ユーザー追加</h2>
-      <form method="POST">
+      <form method="POST" class="add-user-form">
         {{ form.hidden_tag() }}
         <div class="form-group">
-          {{ form.username.label }}<br>
+          {{ form.username.label }}
           {{ form.username() }}
         </div>
         <div class="form-group">
-          {{ form.password.label }}<br>
+          {{ form.password.label }}
           {{ form.password() }}
         </div>
         <div class="form-group">
-          {{ form.confirm_password.label }}<br>
+          {{ form.confirm_password.label }}
           {{ form.confirm_password() }}
         </div>
         <div class="form-group">
-          {{ form.role.label }}<br>
+          {{ form.role.label }}
           {{ form.role() }}
         </div>
         {{ form.submit(class="btn") }}
       </form>
     </div>
   </div>
+
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 2em;
+      align-items: start;
+    }
+    
+    .users-section h2,
+    .add-user-section h2 {
+      margin-top: 0;
+      margin-bottom: 1em;
+    }
+    
+    /* モバイル用ユーザーカード */
+    .mobile-user-cards {
+      display: none;
+    }
+    
+    .user-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-left: 4px solid #4a69bd;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1em;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+    
+    .user-info h3 {
+      margin: 0;
+      color: #4a69bd;
+      font-size: 1.1em;
+    }
+    
+    .role-badge {
+      padding: 0.2em 0.6em;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: bold;
+      color: white;
+    }
+    
+    .role-badge.admin {
+      background: #dc3545;
+    }
+    
+    .role-badge.staff {
+      background: #28a745;
+    }
+    
+    .user-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+    
+    .order-controls {
+      display: flex;
+      gap: 0.2em;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.5em;
+      flex-wrap: wrap;
+    }
+    
+    .desktop-user-table {
+      display: block;
+    }
+    
+    /* フォームスタイル */
+    .add-user-form {
+      background: #f8f9fa;
+      padding: 1.5em;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+    
+    /* モバイル対応 */
+    @media (max-width: 1024px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+        gap: 2em;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-user-cards {
+        display: block;
+      }
+      
+      .desktop-user-table {
+        display: none;
+      }
+      
+      .add-user-form {
+        padding: 1em;
+      }
+      
+      .user-info {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .user-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .action-buttons {
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .user-card {
+        padding: 0.8em;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+      
+      .action-buttons .btn {
+        width: 100%;
+        margin-bottom: 0.3em;
+      }
+    }
+  </style>
 {% endblock %}

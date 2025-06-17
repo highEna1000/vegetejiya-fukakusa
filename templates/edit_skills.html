@@ -3,27 +3,308 @@
 {% block title %}スキル編集{% endblock %}
 
 {% block content %}
-  <h1>スキル編集: {{ user_to_edit.username }}</h1>
-  <p>スキル情報を更新してください。</p>
-  <form method="POST">
-    <table>
-      <thead>
-        <tr>
-          <th>仕事内容</th>
-          <th>できる</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="edit-skills-container">
+    <div class="user-header">
+      <h1>スキル編集</h1>
+      <div class="user-info">
+        <span class="username">{{ user_to_edit.username }}</span>
+        {% if user_to_edit.role == 'admin' %}
+          <span class="role-badge admin">管理者</span>
+        {% else %}
+          <span class="role-badge staff">スタッフ</span>
+        {% endif %}
+      </div>
+      <p class="description">スキル情報を更新してください。</p>
+    </div>
+    
+    <form method="POST" class="skills-form">
+      <!-- モバイル用カード表示 -->
+      <div class="mobile-skills">
         {% for skill in skills_to_edit %}
-        <tr>
-          <td>{{ skill.task.name }}</td>
-          <td><input type="checkbox" name="task_{{ skill.task_id }}" {% if skill.can_do %}checked{% endif %}></td>
-        </tr>
+        <div class="skill-card">
+          <label class="skill-label">
+            <div class="skill-info">
+              <span class="task-name">{{ skill.task.name }}</span>
+              <div class="skill-toggle">
+                <input type="checkbox" name="task_{{ skill.task_id }}" id="task_{{ skill.task_id }}" 
+                       {% if skill.can_do %}checked{% endif %} class="skill-checkbox">
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+          </label>
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
-    <br>
-    <input type="submit" value="更新する" class="btn">
-    <a href="{{ url_for('dashboard') }}" class="btn" style="background-color: #7f8c8d;">キャンセル</a>
-  </form>
+      </div>
+      
+      <!-- デスクトップ用テーブル表示 -->
+      <div class="desktop-skills">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>仕事内容</th>
+                <th>できる</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for skill in skills_to_edit %}
+              <tr>
+                <td>{{ skill.task.name }}</td>
+                <td style="text-align: center;">
+                  <input type="checkbox" name="task_{{ skill.task_id }}" 
+                         {% if skill.can_do %}checked{% endif %} class="skill-checkbox-desktop">
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <input type="submit" value="更新する" class="btn btn-primary">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">キャンセル</a>
+      </div>
+    </form>
+  </div>
+
+  <style>
+    .edit-skills-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .user-header {
+      text-align: center;
+      margin-bottom: 2em;
+      padding-bottom: 1em;
+      border-bottom: 2px solid #eee;
+    }
+    
+    .user-header h1 {
+      margin-bottom: 0.5em;
+      color: #4a69bd;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1em;
+      margin-bottom: 1em;
+      flex-wrap: wrap;
+    }
+    
+    .username {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .role-badge {
+      padding: 0.3em 0.8em;
+      border-radius: 15px;
+      font-size: 0.8em;
+      font-weight: bold;
+      color: white;
+    }
+    
+    .role-badge.admin {
+      background: #dc3545;
+    }
+    
+    .role-badge.staff {
+      background: #28a745;
+    }
+    
+    .description {
+      color: #6c757d;
+      margin: 0;
+    }
+    
+    /* モバイル用スキルカード */
+    .mobile-skills {
+      display: none;
+    }
+    
+    .skill-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 0.8em;
+      border: 1px solid #dee2e6;
+      transition: box-shadow 0.2s;
+    }
+    
+    .skill-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .skill-label {
+      display: block;
+      padding: 1em;
+      cursor: pointer;
+      margin: 0;
+    }
+    
+    .skill-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .task-name {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    /* カスタムトグルスイッチ */
+    .skill-toggle {
+      position: relative;
+    }
+    
+    .skill-checkbox {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+      background-color: #ccc;
+      border-radius: 28px;
+      transition: 0.3s;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    
+    .skill-checkbox:checked + .toggle-slider {
+      background-color: #4a69bd;
+    }
+    
+    .skill-checkbox:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+    
+    /* デスクトップ用テーブル */
+    .desktop-skills {
+      display: block;
+    }
+    
+    .skill-checkbox-desktop {
+      transform: scale(1.5);
+      cursor: pointer;
+    }
+    
+    /* フォームアクション */
+    .form-actions {
+      display: flex;
+      gap: 1em;
+      margin-top: 2em;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn-primary {
+      background-color: #4a69bd;
+      border-color: #4a69bd;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3c5aa6;
+      border-color: #3c5aa6;
+    }
+    
+    .btn-secondary {
+      background-color: #6c757d;
+      border-color: #6c757d;
+      color: white;
+      text-decoration: none;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+      border-color: #5a6268;
+      color: white;
+    }
+    
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+      .mobile-skills {
+        display: block;
+      }
+      
+      .desktop-skills {
+        display: none;
+      }
+      
+      .edit-skills-container {
+        max-width: 100%;
+        margin: 0;
+      }
+      
+      .user-header {
+        padding: 0 1em 1em;
+      }
+      
+      .user-info {
+        flex-direction: column;
+        gap: 0.5em;
+      }
+      
+      .form-actions {
+        flex-direction: column;
+        padding: 0 1em;
+      }
+      
+      .form-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5em;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .skill-card {
+        margin-bottom: 0.5em;
+      }
+      
+      .skill-label {
+        padding: 0.8em;
+      }
+      
+      .user-header h1 {
+        font-size: 1.3em;
+      }
+      
+      .task-name {
+        font-size: 0.9em;
+      }
+      
+      .toggle-slider {
+        width: 45px;
+        height: 25px;
+      }
+      
+      .toggle-slider:before {
+        height: 19px;
+        width: 19px;
+      }
+      
+      .skill-checkbox:checked + .toggle-slider:before {
+        transform: translateX(20px);
+      }
+    }
+  </style>
 {% endblock %}
