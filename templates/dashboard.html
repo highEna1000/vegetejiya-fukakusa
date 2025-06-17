@@ -4,38 +4,183 @@
 
 {% block content %}
   <h1>スキル一覧</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>スタッフ名</th>
-        {% for task in tasks %}
-          <th>{{ task.name }}</th>
-        {% endfor %}
-        {% if current_user.role == 'admin' %}
-          <th>操作</th>
+  
+  <!-- スマホ用カード表示 -->
+  <div class="mobile-cards">
+    {% for user in users %}
+    <div class="user-card">
+      <div class="user-header">
+        <h3>{{ user.username }}</h3>
+        {% if user.role == 'admin' %}
+          <span class="admin-badge">管理者</span>
         {% endif %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in users %}
-      <tr>
-        <td>{{ user.username }} {% if user.role == 'admin' %}(管理者){% endif %}</td>
-        {% for task in tasks %}
-          <td>
-            {% if skill_data[user.id].get(task.id) %}
-              ✅
-            {% else %}
-              -
-            {% endif %}
-          </td>
-        {% endfor %}
         {% if current_user.role == 'admin' %}
-          <td>
-            <a href="{{ url_for('edit_skills', user_id=user.id) }}" class="btn">編集</a>
-          </td>
+          <a href="{{ url_for('edit_skills', user_id=user.id) }}" class="btn btn-small btn-inline">編集</a>
         {% endif %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </div>
+      <div class="skills-grid">
+        {% for task in tasks %}
+          <div class="skill-item">
+            <span class="skill-name">{{ task.name }}</span>
+            <span class="skill-status">
+              {% if skill_data[user.id].get(task.id) %}
+                <span class="skill-yes">✅</span>
+              {% else %}
+                <span class="skill-no">❌</span>
+              {% endif %}
+            </span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  
+  <!-- デスクトップ用テーブル表示 -->
+  <div class="table-container desktop-table">
+    <table>
+      <thead>
+        <tr>
+          <th>スタッフ名</th>
+          {% for task in tasks %}
+            <th>{{ task.name }}</th>
+          {% endfor %}
+          {% if current_user.role == 'admin' %}
+            <th>操作</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td>{{ user.username }} {% if user.role == 'admin' %}(管理者){% endif %}</td>
+          {% for task in tasks %}
+            <td>
+              {% if skill_data[user.id].get(task.id) %}
+                ✅
+              {% else %}
+                ❌
+              {% endif %}
+            </td>
+          {% endfor %}
+          {% if current_user.role == 'admin' %}
+            <td>
+              <a href="{{ url_for('edit_skills', user_id=user.id) }}" class="btn btn-small">編集</a>
+            </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    /* モバイル用カード表示 */
+    .mobile-cards {
+      display: none;
+    }
+    
+    .user-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-left: 4px solid #4a69bd;
+    }
+    
+    .user-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1em;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+    
+    .user-header h3 {
+      margin: 0;
+      color: #4a69bd;
+      font-size: 1.1em;
+    }
+    
+    .admin-badge {
+      background: #28a745;
+      color: white;
+      padding: 0.2em 0.5em;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+    
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.5em;
+    }
+    
+    .skill-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5em;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    
+    .skill-name {
+      font-weight: 500;
+      font-size: 0.9em;
+    }
+    
+    .skill-status {
+      font-size: 1.2em;
+    }
+    
+    .skill-yes {
+      color: #28a745;
+    }
+    
+    .skill-no {
+      color: #dc3545;
+    }
+    
+    .desktop-table {
+      display: block;
+    }
+    
+    /* モバイル表示切り替え */
+    @media (max-width: 768px) {
+      .mobile-cards {
+        display: block;
+      }
+      
+      .desktop-table {
+        display: none;
+      }
+      
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .user-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .user-card {
+        padding: 0.8em;
+      }
+      
+      .skill-item {
+        padding: 0.4em;
+      }
+      
+      .skill-name {
+        font-size: 0.8em;
+      }
+    }
+  </style>
 {% endblock %}
