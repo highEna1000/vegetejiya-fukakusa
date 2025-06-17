@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}初回スキル登録{% endblock %}
+
+{% block content %}
+  <h1>スキル登録</h1>
+  <p>現在のあなたのスキルをチェックしてください。</p>
+  <form method="POST">
+    <table>
+      <thead>
+        <tr>
+          <th>仕事内容</th>
+          <th>できる</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr>
+          <td>{{ task.name }}</td>
+          <td><input type="checkbox" name="task_{{ task.id }}"></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <br>
+    <input type="submit" value="登録する" class="btn">
+  </form>
+{% endblock %}

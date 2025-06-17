@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}ユーザー管理{% endblock %}
+
+{% block content %}
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div style="width: 60%;">
+      <h2>ユーザー一覧</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>ユーザー名</th>
+            <th>権限</th>
+            <th>順序</th>
+            <th colspan="2">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ '管理者' if user.role == 'admin' else 'スタッフ' }}</td>
+            <td style="width: 100px; text-align: center;">
+              {% if not loop.first %}
+              <a href="{{ url_for('move_user', user_id=user.id, direction='up') }}" class="btn" style="font-size: 12px; padding: 2px 6px; margin: 1px;">↑</a>
+              {% endif %}
+              {% if not loop.last %}
+              <a href="{{ url_for('move_user', user_id=user.id, direction='down') }}" class="btn" style="font-size: 12px; padding: 2px 6px; margin: 1px;">↓</a>
+              {% endif %}
+            </td>
+            <td style="width: 80px;">
+              <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn">編集</a>
+            </td>
+            <td style="width: 80px;">
+              {% if user.id != current_user.id %}
+              <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" onsubmit="return confirm('本当にこのユーザーを削除しますか？');">
+                <input type="submit" value="削除" class="btn btn-danger">
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="width: 35%;">
+      <h2>新規ユーザー追加</h2>
+      <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.username.label }}<br>
+          {{ form.username() }}
+        </div>
+        <div class="form-group">
+          {{ form.password.label }}<br>
+          {{ form.password() }}
+        </div>
+        <div class="form-group">
+          {{ form.confirm_password.label }}<br>
+          {{ form.confirm_password() }}
+        </div>
+        <div class="form-group">
+          {{ form.role.label }}<br>
+          {{ form.role() }}
+        </div>
+        {{ form.submit(class="btn") }}
+      </form>
+    </div>
+  </div>
+{% endblock %}

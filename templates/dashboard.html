@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}スキル一覧ダッシュボード{% endblock %}
+
+{% block content %}
+  <h1>スキル一覧</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>スタッフ名</th>
+        {% for task in tasks %}
+          <th>{{ task.name }}</th>
+        {% endfor %}
+        {% if current_user.role == 'admin' %}
+          <th>操作</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }} {% if user.role == 'admin' %}(管理者){% endif %}</td>
+        {% for task in tasks %}
+          <td>
+            {% if skill_data[user.id].get(task.id) %}
+              ✅
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        {% endfor %}
+        {% if current_user.role == 'admin' %}
+          <td>
+            <a href="{{ url_for('edit_skills', user_id=user.id) }}" class="btn">編集</a>
+          </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}スキル編集{% endblock %}
+
+{% block content %}
+  <h1>スキル編集: {{ user_to_edit.username }}</h1>
+  <p>スキル情報を更新してください。</p>
+  <form method="POST">
+    <table>
+      <thead>
+        <tr>
+          <th>仕事内容</th>
+          <th>できる</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for skill in skills_to_edit %}
+        <tr>
+          <td>{{ skill.task.name }}</td>
+          <td><input type="checkbox" name="task_{{ skill.task_id }}" {% if skill.can_do %}checked{% endif %}></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <br>
+    <input type="submit" value="更新する" class="btn">
+    <a href="{{ url_for('dashboard') }}" class="btn" style="background-color: #7f8c8d;">キャンセル</a>
+  </form>
+{% endblock %}

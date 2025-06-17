@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}ユーザー編集{% endblock %}
+
+{% block content %}
+  <h2>ユーザー編集</h2>
+  <div style="max-width: 400px;">
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.username.label }}<br>
+        {{ form.username() }}
+      </div>
+      <div class="form-group">
+        {{ form.password.label }}<br>
+        {{ form.password() }}
+      </div>
+      <div class="form-group">
+        {{ form.confirm_password.label }}<br>
+        {{ form.confirm_password() }}
+      </div>
+      <div class="form-group">
+        {{ form.role.label }}<br>
+        {{ form.role() }}
+      </div>
+      <div style="margin-top: 20px;">
+        {{ form.submit(class="btn") }}
+        <a href="{{ url_for('manage_users') }}" class="btn" style="margin-left: 10px;">キャンセル</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}スキルチェッカー{% endblock %}</title>
+    <style>
+      body { font-family: sans-serif; margin: 2em; background-color: #f4f4f9; color: #333; }
+      nav { background-color: #4a69bd; padding: 1em; border-radius: 8px; margin-bottom: 2em; }
+      nav a { color: white; text-decoration: none; margin-right: 1.5em; font-weight: bold; }
+      .container { max-width: 1000px; margin: 0 auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+      h1, h2 { color: #4a69bd; }
+      table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+      th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+      th { background-color: #eef2f7; }
+      .flash { padding: 1em; margin-bottom: 1em; border-radius: 4px; }
+      .flash.success { background-color: #d4edda; color: #155724; }
+      .flash.error { background-color: #f8d7da; color: #721c24; }
+      .form-group { margin-bottom: 1em; }
+      .form-group label { display: block; margin-bottom: .5em; }
+      .form-group input, .form-group select { width: 100%; padding: 0.8em; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+      .btn { padding: 0.8em 1.5em; background-color: #4a69bd; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+      .btn-danger { background-color: #e74c3c; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+     <nav>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard') }}">ダッシュボード</a>
+          {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('manage_users') }}">ユーザー管理</a>
+            <a href="{{ url_for('manage_tasks') }}">仕事管理</a>  {% endif %}
+          <a href="{{ url_for('logout') }}" style="float: right;">ログアウト ({{ current_user.username }})</a>
+        {% endif %}
+      </nav>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash success">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

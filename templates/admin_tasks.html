@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}仕事リスト管理{% endblock %}
+
+{% block content %}
+  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div style="width: 60%;">
+      <h2>仕事リスト一覧</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>現在の仕事内容</th>
+            <th colspan="2">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+          <tr>
+            <td style="text-align: left; padding-left: 10px;">{{ task.name }}</td>
+            <td style="width: 80px;">
+              <a href="{{ url_for('manage_tasks', task_id=task.id) }}" class="btn">編集</a>
+            </td>
+            <td style="width: 80px;">
+              <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" onsubmit="return confirm('この仕事を削除すると、全ユーザーの関連スキルデータも削除されます。本当によろしいですか？');">
+                <input type="submit" value="削除" class="btn btn-danger">
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div style="width: 35%;">
+        {% if form.name.data %}
+          <h2>仕事を編集</h2>
+        {% else %}
+          <h2>新しい仕事を追加</h2>
+        {% endif %}
+      <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+          {{ form.name.label }}<br>
+          {{ form.name(size=32) }}
+        </div>
+        {{ form.submit(class="btn") }}
+      </form>
+    </div>
+  </div>
+{% endblock %}
