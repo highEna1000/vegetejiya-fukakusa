@@ -13,17 +13,23 @@
   <!-- スマホ用カード表示 -->
   <div class="mobile-cards">
     {% for user in users %}
+    {% if current_user.role == 'admin' or user.role != 'admin' %}
     <div class="user-card">
-      <div class="user-header">
-        <h3>{{ user.username }}</h3>
-        {% if user.role == 'admin' %}
-          <span class="admin-badge">管理者</span>
-        {% endif %}
-        {% if current_user.role == 'admin' %}
-          <a href="{{ url_for('edit_skills', user_id=user.id) }}" class="btn btn-small btn-inline">編集</a>
-        {% endif %}
+      <div class="user-header" onclick="toggleSkills({{ user.id }})">
+        <div class="user-info">
+          <h3>{{ user.username }}</h3>
+          {% if current_user.role == 'admin' and user.role == 'admin' %}
+            <span class="admin-badge">管理者</span>
+          {% endif %}
+        </div>
+        <div class="header-actions">
+          {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('edit_skills', user_id=user.id) }}" class="btn btn-small btn-inline" onclick="event.stopPropagation()">編集</a>
+          {% endif %}
+          <span class="toggle-icon" id="icon-{{ user.id }}">▼</span>
+        </div>
       </div>
-      <div class="skills-grid">
+      <div class="skills-grid" id="skills-{{ user.id }}" style="display: none;">
         {% for task in tasks %}
           <div class="skill-item">
             <span class="skill-name">{{ task.name }}</span>
@@ -38,6 +44,7 @@
         {% endfor %}
       </div>
     </div>
+    {% endif %}
     {% endfor %}
   </div>
   
@@ -57,8 +64,9 @@
       </thead>
       <tbody>
         {% for user in users %}
+        {% if current_user.role == 'admin' or user.role != 'admin' %}
         <tr>
-          <td>{{ user.username }} {% if user.role == 'admin' %}(管理者){% endif %}</td>
+          <td>{{ user.username }} {% if current_user.role == 'admin' and user.role == 'admin' %}(管理者){% endif %}</td>
           {% for task in tasks %}
             <td>
               {% if skill_data[user.id].get(task.id) %}
@@ -74,6 +82,7 @@
             </td>
           {% endif %}
         </tr>
+        {% endif %}
         {% endfor %}
       </tbody>
     </table>
@@ -134,9 +143,40 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1em;
-      flex-wrap: wrap;
+      padding: 0.5em 0;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s;
+    }
+    
+    .user-header:hover {
+      background-color: rgba(74, 105, 189, 0.05);
+      border-radius: 4px;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
       gap: 0.5em;
+      flex-wrap: wrap;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+    
+    .toggle-icon {
+      font-size: 0.8em;
+      color: #4a69bd;
+      transition: transform 0.3s;
+      min-width: 20px;
+      text-align: center;
+    }
+    
+    .toggle-icon.expanded {
+      transform: rotate(180deg);
     }
     
     .user-header h3 {
@@ -158,6 +198,11 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 0.5em;
+      margin-top: 1em;
+      padding-top: 1em;
+      border-top: 1px solid #eee;
+      transition: max-height 0.3s ease;
+      overflow: hidden;
     }
     
     .skill-item {
@@ -206,8 +251,14 @@
       }
       
       .user-header {
+        flex-direction: row;
+        align-items: center;
+      }
+      
+      .user-info {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.3em;
       }
       
       .dashboard-header {
@@ -240,4 +291,41 @@
       }
     }
   </style>
+
+  <script>
+    function toggleSkills(userId) {
+      const skillsGrid = document.getElementById('skills-' + userId);
+      const toggleIcon = document.getElementById('icon-' + userId);
+      
+      if (skillsGrid.style.display === 'none') {
+        skillsGrid.style.display = 'grid';
+        toggleIcon.classList.add('expanded');
+        toggleIcon.textContent = '▲';
+      } else {
+        skillsGrid.style.display = 'none';
+        toggleIcon.classList.remove('expanded');
+        toggleIcon.textContent = '▼';
+      }
+    }
+    
+    // 全て展開/全て閉じるボタンの機能（オプション）
+    function toggleAllSkills() {
+      const skillsGrids = document.querySelectorAll('.skills-grid');
+      const toggleIcons = document.querySelectorAll('.toggle-icon');
+      const allExpanded = Array.from(skillsGrids).every(grid => grid.style.display === 'grid');
+      
+      skillsGrids.forEach((grid, index) => {
+        const icon = toggleIcons[index];
+        if (allExpanded) {
+          grid.style.display = 'none';
+          icon.classList.remove('expanded');
+          icon.textContent = '▼';
+        } else {
+          grid.style.display = 'grid';
+          icon.classList.add('expanded');
+          icon.textContent = '▲';
+        }
+      });
+    }
+  </script>
 {% endblock %}
