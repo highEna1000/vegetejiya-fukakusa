@@ -252,6 +252,7 @@
             {% if current_user.role == 'admin' %}
               <a href="{{ url_for('manage_users') }}">ユーザー管理</a>
               <a href="{{ url_for('manage_tasks') }}">仕事管理</a>
+              
             {% endif %}
           </div>
           <div class="nav-right">

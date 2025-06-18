@@ -119,12 +119,15 @@
     /* カスタムトグルスイッチ */
     .skill-toggle {
       position: relative;
+      display: inline-block;
     }
     
     .skill-checkbox {
+      position: absolute;
       opacity: 0;
-      width: 0;
+      cursor: pointer;
       height: 0;
+      width: 0;
     }
     
     .toggle-slider {
@@ -135,6 +138,7 @@
       background-color: #ccc;
       border-radius: 28px;
       transition: 0.3s;
+      cursor: pointer;
     }
     
     .toggle-slider:before {
@@ -147,6 +151,7 @@
       background-color: white;
       border-radius: 50%;
       transition: 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     
     .skill-checkbox:checked + .toggle-slider {
@@ -155,6 +160,10 @@
     
     .skill-checkbox:checked + .toggle-slider:before {
       transform: translateX(22px);
+    }
+    
+    .skill-checkbox:focus + .toggle-slider {
+      box-shadow: 0 0 1px #4a69bd;
     }
     
     /* デスクトップ用テーブル */
