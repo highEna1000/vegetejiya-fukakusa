@@ -62,8 +62,8 @@
       </div>
       
       <div class="form-actions">
-        <input type="submit" value="更新する" class="btn btn-primary">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">キャンセル</a>
+        <input type="submit" value="更新する" class="btn btn-custom-primary">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-custom-secondary">キャンセル</a>
       </div>
     </form>
   </div>
@@ -226,31 +226,33 @@
       flex-wrap: wrap;
     }
     
-    .btn-primary {
-      background-color: #4a69bd;
-      border-color: #4a69bd;
-      padding: 8px 20px;
-      font-size: 14px;
+    .btn-custom-primary {
+      background-color: #4a69bd !important;
+      border-color: #4a69bd !important;
+      padding: 8px 16px !important;
+      font-size: 14px !important;
+      min-height: auto !important;
     }
     
-    .btn-primary:hover {
-      background-color: #3c5aa6;
-      border-color: #3c5aa6;
+    .btn-custom-primary:hover {
+      background-color: #3c5aa6 !important;
+      border-color: #3c5aa6 !important;
     }
     
-    .btn-secondary {
-      background-color: #6c757d;
-      border-color: #6c757d;
-      color: white;
-      text-decoration: none;
-      padding: 8px 20px;
-      font-size: 14px;
+    .btn-custom-secondary {
+      background-color: #6c757d !important;
+      border-color: #6c757d !important;
+      color: white !important;
+      text-decoration: none !important;
+      padding: 8px 16px !important;
+      font-size: 14px !important;
+      min-height: auto !important;
     }
     
-    .btn-secondary:hover {
-      background-color: #5a6268;
-      border-color: #5a6268;
-      color: white;
+    .btn-custom-secondary:hover {
+      background-color: #5a6268 !important;
+      border-color: #5a6268 !important;
+      color: white !important;
     }
     
     /* モバイル対応 */
