@@ -10,7 +10,8 @@
     </div>
   </div>
   
-  <!-- スキル検索セクション -->
+  <!-- スキル検索セクション（管理者のみ） -->
+  {% if current_user.role == 'admin' %}
   <div class="skill-search-section">
     <h3>スキル検索</h3>
     <div class="search-controls">
@@ -25,11 +26,13 @@
     </div>
     <div id="searchResults" class="search-results"></div>
   </div>
+  {% endif %}
   
   <!-- スマホ用カード表示 -->
   <div class="mobile-cards">
     {% for user in users %}
-    {% if current_user.role == 'admin' or user.role != 'admin' %}
+    {# スタッフは他のスタッフを見ることができ、管理者は全員を見ることができる #%}
+    {% if current_user.role == 'admin' or (current_user.role == 'staff' and user.role == 'staff') %}
     <div class="user-card">
       <div class="user-header" onclick="toggleSkills({{ user.id }})">
         <div class="user-info">
@@ -80,7 +83,8 @@
       </thead>
       <tbody>
         {% for user in users %}
-        {% if current_user.role == 'admin' or user.role != 'admin' %}
+        {# スタッフは他のスタッフを見ることができ、管理者は全員を見ることができる #%}
+    {% if current_user.role == 'admin' or (current_user.role == 'staff' and user.role == 'staff') %}
         <tr>
           <td>{{ user.username }} {% if current_user.role == 'admin' and user.role == 'admin' %}(管理者){% endif %}</td>
           {% for task in tasks %}
@@ -464,18 +468,8 @@
       
       // スキルデータから該当ユーザーを検索
       const skillData = {{ skill_data | tojson }};
-      const usersData = [
-        {% for user in users %}
-        {id: {{ user.id }}, username: "{{ user.username }}", role: "{{ user.role }}"}
-        {%- if not loop.last %},{% endif %}
-        {% endfor %}
-      ];
-      const tasksData = [
-        {% for task in tasks %}
-        {id: {{ task.id }}, name: "{{ task.name }}"}
-        {%- if not loop.last %},{% endif %}
-        {% endfor %}
-      ];
+      const usersData = [{% for user in users %}{id: {{ user.id }}, username: "{{ user.username }}", role: "{{ user.role }}"}{% if not loop.last %},{% endif %}{% endfor %}];
+      const tasksData = [{% for task in tasks %}{id: {{ task.id }}, name: "{{ task.name }}"}{% if not loop.last %},{% endif %}{% endfor %}];
       
       const selectedTask = tasksData.find(task => task.id == selectedSkillId);
       const matchingUsers = usersData.filter(user => {
@@ -508,7 +502,10 @@
     
     // 初期化
     document.addEventListener('DOMContentLoaded', function() {
+      // 管理者のみスキル検索を初期化
+      {% if current_user.role == 'admin' %}
       clearSearch();
+      {% endif %}
     });
   </script>
 {% endblock %}
