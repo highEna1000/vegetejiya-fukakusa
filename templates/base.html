@@ -248,7 +248,7 @@
      <nav>
         {% if current_user.is_authenticated %}
           <div class="nav-left">
-            <a href="{{ url_for('dashboard') }}">ダッシュボード</a>
+            <a href="{{ url_for('dashboard') }}">スタッフ一覧</a>
             {% if current_user.role == 'admin' %}
               <a href="{{ url_for('manage_users') }}">ユーザー管理</a>
               <a href="{{ url_for('manage_tasks') }}">仕事管理</a>

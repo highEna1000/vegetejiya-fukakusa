@@ -3,48 +3,169 @@
 {% block title %}仕事リスト管理{% endblock %}
 
 {% block content %}
-  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-    <div style="width: 60%;">
+  <div class="tasks-layout">
+    <!-- 仕事一覧セクション -->
+    <div class="tasks-section">
       <h2>仕事リスト一覧</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>現在の仕事内容</th>
-            <th colspan="2">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for task in tasks %}
-          <tr>
-            <td style="text-align: left; padding-left: 10px;">{{ task.name }}</td>
-            <td style="width: 80px;">
-              <a href="{{ url_for('manage_tasks', task_id=task.id) }}" class="btn">編集</a>
-            </td>
-            <td style="width: 80px;">
-              <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" onsubmit="return confirm('この仕事を削除すると、全ユーザーの関連スキルデータも削除されます。本当によろしいですか？');">
-                <input type="submit" value="削除" class="btn btn-danger">
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      
+      <!-- モバイル用カード表示 -->
+      <div class="mobile-task-cards">
+        {% for task in tasks %}
+        <div class="task-card">
+          <div class="task-info">
+            <h3>{{ task.name }}</h3>
+          </div>
+          <div class="task-actions">
+            <a href="{{ url_for('manage_tasks', task_id=task.id) }}" class="btn btn-small">編集</a>
+            <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" 
+                  onsubmit="return confirm('この仕事を削除すると、全ユーザーの関連スキルデータも削除されます。本当によろしいですか？');" 
+                  style="display: inline;">
+              <input type="submit" value="削除" class="btn btn-danger btn-small">
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <!-- デスクトップ用テーブル表示 -->
+      <div class="desktop-task-table">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>現在の仕事内容</th>
+                <th colspan="2">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+              <tr>
+                <td style="text-align: left; padding-left: 10px;">{{ task.name }}</td>
+                <td style="width: 80px;">
+                  <a href="{{ url_for('manage_tasks', task_id=task.id) }}" class="btn btn-small">編集</a>
+                </td>
+                <td style="width: 80px;">
+                  <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" onsubmit="return confirm('この仕事を削除すると、全ユーザーの関連スキルデータも削除されます。本当によろしいですか？');">
+                    <input type="submit" value="削除" class="btn btn-danger btn-small">
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <div style="width: 35%;">
-        {% if form.name.data %}
-          <h2>仕事を編集</h2>
-        {% else %}
-          <h2>新しい仕事を追加</h2>
-        {% endif %}
-      <form method="POST">
+    <!-- 仕事追加・編集セクション -->
+    <div class="add-task-section">
+      {% if form.name.data %}
+        <h2>仕事を編集</h2>
+      {% else %}
+        <h2>新しい仕事を追加</h2>
+      {% endif %}
+      
+      <form method="POST" class="add-task-form">
         {{ form.hidden_tag() }}
         <div class="form-group">
-          {{ form.name.label }}<br>
-          {{ form.name(size=32) }}
+          {{ form.name.label }}
+          {{ form.name() }}
         </div>
         {{ form.submit(class="btn") }}
       </form>
     </div>
   </div>
+
+  <style>
+    .tasks-layout {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 2em;
+      align-items: start;
+    }
+    
+    .tasks-section h2,
+    .add-task-section h2 {
+      margin-top: 0;
+      margin-bottom: 1em;
+    }
+    
+    /* モバイル用タスクカード */
+    .mobile-task-cards {
+      display: none;
+    }
+    
+    .task-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 1em;
+      border-left: 4px solid #4a69bd;
+    }
+    
+    .task-info h3 {
+      margin: 0 0 1em 0;
+      color: #4a69bd;
+      font-size: 1.1em;
+    }
+    
+    .task-actions {
+      display: flex;
+      gap: 0.5em;
+      flex-wrap: wrap;
+    }
+    
+    .desktop-task-table {
+      display: block;
+    }
+    
+    /* フォームスタイル */
+    .add-task-form {
+      background: #f8f9fa;
+      padding: 1.5em;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+    
+    /* モバイル対応 */
+    @media (max-width: 1024px) {
+      .tasks-layout {
+        grid-template-columns: 1fr;
+        gap: 2em;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .mobile-task-cards {
+        display: block;
+      }
+      
+      .desktop-task-table {
+        display: none;
+      }
+      
+      .add-task-form {
+        padding: 1em;
+      }
+      
+      .task-actions {
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .task-card {
+        padding: 0.8em;
+      }
+      
+      .task-actions {
+        flex-direction: column;
+      }
+      
+      .task-actions .btn {
+        width: 100%;
+        margin-bottom: 0.3em;
+      }
+    }
+  </style>
 {% endblock %}

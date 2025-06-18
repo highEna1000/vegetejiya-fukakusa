@@ -3,26 +3,250 @@
 {% block title %}初回スキル登録{% endblock %}
 
 {% block content %}
-  <h1>スキル登録</h1>
-  <p>現在のあなたのスキルをチェックしてください。</p>
-  <form method="POST">
-    <table>
-      <thead>
-        <tr>
-          <th>仕事内容</th>
-          <th>できる</th>
-        </tr>
-      </thead>
-      <tbody>
+  <div class="initial-setup-container">
+    <div class="setup-header">
+      <h1>スキル登録</h1>
+      <p class="description">現在のあなたのスキルをチェックしてください。</p>
+    </div>
+    
+    <form method="POST" class="skills-form">
+      <!-- モバイル用カード表示 -->
+      <div class="mobile-skills">
         {% for task in tasks %}
-        <tr>
-          <td>{{ task.name }}</td>
-          <td><input type="checkbox" name="task_{{ task.id }}"></td>
-        </tr>
+        <div class="skill-card">
+          <label class="skill-label">
+            <div class="skill-info">
+              <span class="task-name">{{ task.name }}</span>
+              <div class="skill-toggle">
+                <input type="checkbox" name="task_{{ task.id }}" id="task_{{ task.id }}" class="skill-checkbox">
+                <span class="toggle-slider"></span>
+              </div>
+            </div>
+          </label>
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
-    <br>
-    <input type="submit" value="登録する" class="btn">
-  </form>
+      </div>
+      
+      <!-- デスクトップ用テーブル表示 -->
+      <div class="desktop-skills">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>仕事内容</th>
+                <th>できる</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+              <tr>
+                <td>{{ task.name }}</td>
+                <td style="text-align: center;">
+                  <input type="checkbox" name="task_{{ task.id }}" class="skill-checkbox-desktop">
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <input type="submit" value="登録する" class="btn btn-primary">
+      </div>
+    </form>
+  </div>
+
+  <style>
+    .initial-setup-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .setup-header {
+      text-align: center;
+      margin-bottom: 2em;
+      padding-bottom: 1em;
+      border-bottom: 2px solid #eee;
+    }
+    
+    .setup-header h1 {
+      margin-bottom: 0.5em;
+      color: #4a69bd;
+    }
+    
+    .description {
+      color: #6c757d;
+      margin: 0;
+      font-size: 1.1em;
+    }
+    
+    /* モバイル用スキルカード */
+    .mobile-skills {
+      display: none;
+    }
+    
+    .skill-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 0.8em;
+      border: 1px solid #dee2e6;
+      transition: box-shadow 0.2s;
+    }
+    
+    .skill-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .skill-label {
+      display: block;
+      padding: 1em;
+      cursor: pointer;
+      margin: 0;
+    }
+    
+    .skill-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .task-name {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    /* カスタムトグルスイッチ */
+    .skill-toggle {
+      position: relative;
+    }
+    
+    .skill-checkbox {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 28px;
+      background-color: #ccc;
+      border-radius: 28px;
+      transition: 0.3s;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    
+    .skill-checkbox:checked + .toggle-slider {
+      background-color: #4a69bd;
+    }
+    
+    .skill-checkbox:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+    
+    /* デスクトップ用テーブル */
+    .desktop-skills {
+      display: block;
+    }
+    
+    .skill-checkbox-desktop {
+      transform: scale(1.5);
+      cursor: pointer;
+    }
+    
+    /* フォームアクション */
+    .form-actions {
+      text-align: center;
+      margin-top: 2em;
+      padding-top: 1em;
+      border-top: 1px solid #eee;
+    }
+    
+    .btn-primary {
+      background-color: #4a69bd;
+      border-color: #4a69bd;
+      padding: 12px 40px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3c5aa6;
+      border-color: #3c5aa6;
+    }
+    
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+      .mobile-skills {
+        display: block;
+      }
+      
+      .desktop-skills {
+        display: none;
+      }
+      
+      .initial-setup-container {
+        max-width: 100%;
+        margin: 0;
+      }
+      
+      .setup-header {
+        padding: 0 1em 1em;
+      }
+      
+      .form-actions {
+        padding: 1em;
+      }
+      
+      .btn-primary {
+        width: 100%;
+        padding: 15px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .skill-card {
+        margin-bottom: 0.5em;
+      }
+      
+      .skill-label {
+        padding: 0.8em;
+      }
+      
+      .setup-header h1 {
+        font-size: 1.3em;
+      }
+      
+      .task-name {
+        font-size: 0.9em;
+      }
+      
+      .toggle-slider {
+        width: 45px;
+        height: 25px;
+      }
+      
+      .toggle-slider:before {
+        height: 19px;
+        width: 19px;
+      }
+      
+      .skill-checkbox:checked + .toggle-slider:before {
+        transform: translateX(20px);
+      }
+    }
+  </style>
 {% endblock %}

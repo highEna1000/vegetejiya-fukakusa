@@ -312,7 +312,6 @@ def move_user(user_id, direction):
         user.order_index = index
     
     db.session.commit()
-    flash(f'ユーザー「{user.username}」の順序を変更しました。')
     return redirect(url_for('manage_users'))
 
 @app.route('/admin/tasks', methods=['GET', 'POST'])
