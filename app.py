@@ -237,6 +237,56 @@ def edit_skills(user_id):
 
     return render_template('edit_skills.html', user_to_edit=user_to_edit, skills_to_edit=skills_to_edit)
 
+@app.route('/my_skills', methods=['GET', 'POST'])
+@login_required
+def my_skills():
+    if request.method == 'POST':
+        # 全てのタスクを取得
+        tasks = Task.query.all()
+        
+        # ユーザーがまだスキル登録していない場合、新規作成
+        if not current_user.skills:
+            for task in tasks:
+                can_do = request.form.get(f'task_{task.id}') == 'on'
+                skill = UserSkill(user_id=current_user.id, task_id=task.id, can_do=can_do)
+                db.session.add(skill)
+        else:
+            # 既存のスキルIDを取得
+            existing_task_ids = {skill.task_id for skill in current_user.skills}
+            
+            # 既存のスキル情報を更新
+            for skill in current_user.skills:
+                can_do = request.form.get(f'task_{skill.task_id}') == 'on'
+                skill.can_do = can_do
+            
+            # 新しく追加されたタスクがあれば、新規スキルエントリを作成
+            for task in tasks:
+                if task.id not in existing_task_ids:
+                    can_do = request.form.get(f'task_{task.id}') == 'on'
+                    skill = UserSkill(user_id=current_user.id, task_id=task.id, can_do=can_do)
+                    db.session.add(skill)
+        
+        db.session.commit()
+        flash(f'スキル情報を更新しました。')
+        return redirect(url_for('dashboard'))
+
+    # 全てのタスクを取得
+    all_tasks = Task.query.all()
+    
+    # ユーザーの既存スキルを辞書形式で取得
+    existing_skills = {skill.task_id: skill for skill in current_user.skills}
+    
+    # 表示用のスキル一覧を作成（既存スキル + 新規タスク）
+    skills_to_edit = []
+    for task in all_tasks:
+        if task.id in existing_skills:
+            skills_to_edit.append(existing_skills[task.id])
+        else:
+            # 新規タスクの場合、仮のスキルデータを作成
+            skills_to_edit.append(UserSkill(user_id=current_user.id, task_id=task.id, can_do=False, task=task))
+
+    return render_template('my_skills.html', user_to_edit=current_user, skills_to_edit=skills_to_edit)
+
 # ★★★ ここから新しい関数を追加 ★★★
 @app.route('/admin/edit_user/<int:user_id>', methods=['GET', 'POST'])
 @admin_required

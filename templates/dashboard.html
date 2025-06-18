@@ -3,7 +3,12 @@
 {% block title %}スキル一覧ダッシュボード{% endblock %}
 
 {% block content %}
-  <h1>スタッフ一覧</h1>
+  <div class="dashboard-header">
+    <h1>スタッフ一覧</h1>
+    <div class="header-actions">
+      <a href="{{ url_for('my_skills') }}" class="btn btn-edit-skills">マイスキル編集</a>
+    </div>
+  </div>
   
   <!-- スマホ用カード表示 -->
   <div class="mobile-cards">
@@ -75,6 +80,43 @@
   </div>
 
   <style>
+    /* ダッシュボードヘッダー */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2em;
+      flex-wrap: wrap;
+      gap: 1em;
+    }
+    
+    .dashboard-header h1 {
+      margin: 0;
+      color: #4a69bd;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 0.5em;
+    }
+    
+    .btn-edit-skills {
+      background-color: #28a745;
+      border-color: #28a745;
+      color: white;
+      padding: 8px 16px;
+      font-size: 14px;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-edit-skills:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+      color: white;
+    }
+    
     /* モバイル用カード表示 */
     .mobile-cards {
       display: none;
@@ -166,6 +208,21 @@
       .user-header {
         flex-direction: column;
         align-items: flex-start;
+      }
+      
+      .dashboard-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      
+      .header-actions {
+        justify-content: center;
+      }
+      
+      .btn-edit-skills {
+        width: 100%;
+        padding: 10px 16px;
       }
     }
     
