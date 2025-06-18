@@ -464,8 +464,18 @@
       
       // スキルデータから該当ユーザーを検索
       const skillData = {{ skill_data | tojson }};
-      const usersData = {{ users | tojson }};
-      const tasksData = {{ tasks | tojson }};
+      const usersData = [
+        {% for user in users %}
+        {id: {{ user.id }}, username: "{{ user.username }}", role: "{{ user.role }}"}
+        {%- if not loop.last %},{% endif %}
+        {% endfor %}
+      ];
+      const tasksData = [
+        {% for task in tasks %}
+        {id: {{ task.id }}, name: "{{ task.name }}"}
+        {%- if not loop.last %},{% endif %}
+        {% endfor %}
+      ];
       
       const selectedTask = tasksData.find(task => task.id == selectedSkillId);
       const matchingUsers = usersData.filter(user => {
