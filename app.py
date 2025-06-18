@@ -13,8 +13,16 @@ from functools import wraps
 # -----------------------------------------------------------
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_secret_key_change_in_production')
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
+
+# データベース設定（環境に応じて切り替え）
+if os.environ.get('DATABASE_URL'):
+    # 本番環境: PostgreSQL（Render.com等）
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+else:
+    # 開発環境: SQLite
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
+    
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -435,34 +443,78 @@ def delete_task(task_id):
 # -----------------------------------------------------------
 # 6. アプリケーションの実行と初期設定
 # -----------------------------------------------------------
+def init_database():
+    """データベースを初期化する関数"""
+    try:
+        db.create_all()
+        
+        # 管理者ユーザーを作成（存在しない場合のみ）
+        if not User.query.filter_by(username='admin').first():
+            print("Creating admin user...")
+            admin_user = User(username='admin', role='admin', is_first_login=False)
+            admin_user.set_password('password')
+            db.session.add(admin_user)
+        
+        # 既存タスクのorder_indexを修正（NULLの場合）
+        try:
+            tasks_without_order = Task.query.filter((Task.order_index.is_(None)) | (Task.order_index == 0)).all()
+            if tasks_without_order:
+                print(f"Updating order_index for {len(tasks_without_order)} tasks...")
+                for index, task in enumerate(tasks_without_order):
+                    task.order_index = index + 1
+        except Exception as e:
+            print(f"Note: order_index update skipped: {e}")
+        
+        db.session.commit()
+        print("Database initialized.")
+        
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+        db.session.rollback()
+
+def create_sample_data():
+    """サンプルデータを作成する関数"""
+    if Task.query.count() == 0:
+        print("Creating sample tasks...")
+        sample_tasks = ['レジ打ち', '品出し', '清掃', '発注作業', 'クレーム対応', '在庫管理', '接客']
+        for index, task_name in enumerate(sample_tasks):
+            task = Task(name=task_name, order_index=index)
+            db.session.add(task)
+        
+        # サンプルスタッフユーザーを作成
+        if User.query.filter_by(role='staff').count() == 0:
+            print("Creating sample staff users...")
+            sample_users = [
+                {'username': 'yamada', 'role': 'staff'},
+                {'username': 'sato', 'role': 'staff'},
+                {'username': 'tanaka', 'role': 'staff'}
+            ]
+            
+            for user_data in sample_users:
+                user = User(
+                    username=user_data['username'], 
+                    role=user_data['role'],
+                    is_first_login=False,
+                    order_index=User.query.count()
+                )
+                user.set_password('password123')  # サンプル用パスワード
+                db.session.add(user)
+        
+        db.session.commit()
+        print("Sample data created.")
+
 if __name__ == '__main__':
     with app.app_context():
-        try:
-            db.create_all()
+        # 環境変数でサンプルデータ作成を制御
+        if os.environ.get('SKIP_DB_INIT') != 'true':
+            init_database()
             
-            # 管理者ユーザーを作成
-            if not User.query.filter_by(username='admin').first():
-                print("Creating admin user...")
-                admin_user = User(username='admin', role='admin', is_first_login=False)
-                admin_user.set_password('password')
-                db.session.add(admin_user)
+            # 開発環境でサンプルデータを作成
+            if os.environ.get('CREATE_SAMPLE_DATA') == 'true' or not os.environ.get('DATABASE_URL'):
+                create_sample_data()
+        else:
+            print("Database initialization skipped.")
             
-            # 既存タスクのorder_indexを修正（NULLの場合）
-            try:
-                tasks_without_order = Task.query.filter((Task.order_index.is_(None)) | (Task.order_index == 0)).all()
-                if tasks_without_order:
-                    print(f"Updating order_index for {len(tasks_without_order)} tasks...")
-                    for index, task in enumerate(tasks_without_order):
-                        task.order_index = index + 1
-            except Exception as e:
-                print(f"Note: order_index update skipped: {e}")
-            
-            db.session.commit()
-            print("Database initialized.")
-            
-        except Exception as e:
-            print(f"Database initialization error: {e}")
-            db.session.rollback()
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     app.run(host='0.0.0.0', port=port, debug=debug)

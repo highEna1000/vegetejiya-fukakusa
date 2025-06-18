@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{% block title %}スキルチェッカー{% endblock %}</title>
+    <title>{% block title %}ベジテジや深草本店{% endblock %}</title>
     <style>
       body { 
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
@@ -14,9 +14,26 @@
         font-size: 16px;
       }
       
+      /* サイトヘッダー */
+      .site-header {
+        text-align: center;
+        margin-bottom: 1em;
+        padding: 1em 0;
+        border-bottom: 2px solid #e9ecef;
+      }
+      
+      .site-title {
+        margin: 0;
+        color: #6aa84e;
+        font-size: 2em;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        letter-spacing: 1px;
+      }
+      
       /* ナビゲーション - モバイル対応 */
       nav { 
-        background-color: #4a69bd; 
+        background-color: #6aa84e; 
         padding: 1em; 
         border-radius: 8px; 
         margin-bottom: 1.5em; 
@@ -27,7 +44,7 @@
       }
       
       nav a { 
-        color: white; 
+        color: white !important; 
         text-decoration: none; 
         margin-right: 1em; 
         font-weight: bold; 
@@ -37,7 +54,8 @@
       }
       
       nav a:hover {
-        background-color: rgba(255,255,255,0.1);
+        background-color: rgba(255,255,255,0.2);
+        color: white !important;
       }
       
       .nav-left {
@@ -60,7 +78,7 @@
       }
       
       h1, h2 { 
-        color: #4a69bd; 
+        color: #6aa84e; 
         margin-top: 0;
       }
       
@@ -134,13 +152,13 @@
       
       .form-group input:focus, .form-group select:focus {
         outline: none;
-        border-color: #4a69bd;
+        border-color: #6aa84e;
       }
       
       /* ボタン - タッチ対応 */
       .btn { 
         padding: 12px 20px; 
-        background-color: #4a69bd; 
+        background-color: #6aa84e; 
         color: white; 
         border: none; 
         border-radius: 6px; 
@@ -156,7 +174,7 @@
       }
       
       .btn:hover {
-        background-color: #3c5aa6;
+        background-color: #5a9545;
       }
       
       .btn-danger { 
@@ -206,6 +224,15 @@
           font-size: 14px;
         }
         
+        .site-title {
+          font-size: 1.5em;
+        }
+        
+        .site-header {
+          padding: 0.5em 0;
+          margin-bottom: 0.5em;
+        }
+        
         h1 {
           font-size: 1.5em;
         }
@@ -240,11 +267,21 @@
         .form-group input, .form-group select {
           padding: 10px;
         }
+        
+        .site-title {
+          font-size: 1.3em;
+          letter-spacing: 0.5px;
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
+      {% if current_user.is_authenticated %}
+      <div class="site-header">
+        <h1 class="site-title">ベジテジや深草本店</h1>
+      </div>
+      {% endif %}
      <nav>
         {% if current_user.is_authenticated %}
           <div class="nav-left">
@@ -252,7 +289,7 @@
             {% if current_user.role == 'admin' %}
               <a href="{{ url_for('manage_users') }}">ユーザー管理</a>
               <a href="{{ url_for('manage_tasks') }}">仕事管理</a>
-              
+
             {% endif %}
           </div>
           <div class="nav-right">

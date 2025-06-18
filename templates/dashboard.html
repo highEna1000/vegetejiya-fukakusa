@@ -31,7 +31,7 @@
   <!-- スマホ用カード表示 -->
   <div class="mobile-cards">
     {% for user in users %}
-    {% if current_user.role == 'admin' or (current_user.role == 'staff' and user.role == 'staff') %}
+    {% if current_user.role == 'admin' or current_user.role == 'staff' %}
     <div class="user-card">
       <div class="user-header" onclick="toggleSkills({{ user.id }})">
         <div class="user-info">
@@ -82,7 +82,7 @@
       </thead>
       <tbody>
         {% for user in users %}
-        {% if current_user.role == 'admin' or (current_user.role == 'staff' and user.role == 'staff') %}
+        {% if current_user.role == 'admin' or current_user.role == 'staff' %}
         <tr>
           <td>{{ user.username }} {% if current_user.role == 'admin' and user.role == 'admin' %}(管理者){% endif %}</td>
           {% for task in tasks %}
@@ -119,7 +119,7 @@
     
     .dashboard-header h1 {
       margin: 0;
-      color: #4a69bd;
+      color: #6aa84e;
     }
     
     .header-actions {
@@ -131,11 +131,14 @@
       background-color: #28a745;
       border-color: #28a745;
       color: white;
-      padding: 8px 16px;
-      font-size: 14px;
+      padding: 6px 12px;
+      font-size: 13px;
       text-decoration: none;
       border-radius: 4px;
       transition: background-color 0.2s;
+      min-height: auto;
+      display: inline-block;
+      width: auto;
     }
     
     .btn-edit-skills:hover {
@@ -154,7 +157,7 @@
       border-radius: 8px;
       padding: 1em;
       margin-bottom: 1em;
-      border-left: 4px solid #4a69bd;
+      border-left: 4px solid #6aa84e;
     }
     
     .user-header {
@@ -168,7 +171,7 @@
     }
     
     .user-header:hover {
-      background-color: rgba(74, 105, 189, 0.05);
+      background-color: rgba(0, 255, 0, 0.05);
       border-radius: 4px;
     }
     
@@ -187,7 +190,7 @@
     
     .toggle-icon {
       font-size: 0.8em;
-      color: #4a69bd;
+      color: #6aa84e;
       transition: transform 0.3s;
       min-width: 20px;
       text-align: center;
@@ -199,7 +202,7 @@
     
     .user-header h3 {
       margin: 0;
-      color: #4a69bd;
+      color: #6aa84e;
       font-size: 1.1em;
     }
     
@@ -266,7 +269,7 @@
     .skill-search-section h3 {
       margin-top: 0;
       margin-bottom: 1em;
-      color: #4a69bd;
+      color: #6aa84e;
       font-size: 1.1em;
     }
     
@@ -329,7 +332,7 @@
       margin-bottom: 0.5em;
       background: #e8f4f8;
       border-radius: 4px;
-      border-left: 3px solid #4a69bd;
+      border-left: 3px solid #6aa84e;
     }
     
     .search-result-name {
@@ -382,8 +385,11 @@
       }
       
       .btn-edit-skills {
-        width: 100%;
-        padding: 10px 16px;
+        width: auto;
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 120px;
+        max-width: 200px;
       }
       
       .search-controls {
@@ -478,7 +484,7 @@
       if (matchingUsers.length === 0) {
         resultsDiv.innerHTML = `<p style="color: #6c757d; text-align: center; margin: 0;">「${selectedTask.name}」ができるスタッフはいません。</p>`;
       } else {
-        let resultsHtml = `<h4 style="margin: 0 0 1em 0; color: #4a69bd;">「${selectedTask.name}」ができるスタッフ (${matchingUsers.length}人)</h4>`;
+        let resultsHtml = `<h4 style="margin: 0 0 1em 0; color: #6aa84e;">「${selectedTask.name}」ができるスタッフ (${matchingUsers.length}人)</h4>`;
         
         matchingUsers.forEach(user => {
           resultsHtml += `
