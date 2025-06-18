@@ -71,7 +71,7 @@
           {{ form.name.label }}
           {{ form.name() }}
         </div>
-        {{ form.submit(class="btn") }}
+        {{ form.submit(class="btn btn-primary-small") }}
       </form>
     </div>
   </div>
@@ -148,9 +148,32 @@
         padding: 1em;
       }
       
+      .btn-primary-small {
+        width: 100%;
+        padding: 10px 16px;
+      }
+      
       .task-actions {
         justify-content: center;
       }
+    }
+    
+    /* 管理者用ボタンサイズ統一 */
+    .btn-primary-small {
+      background-color: #4a69bd;
+      border-color: #4a69bd;
+      color: white;
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 4px;
+      text-decoration: none;
+      border: 1px solid;
+      cursor: pointer;
+    }
+    
+    .btn-primary-small:hover {
+      background-color: #3c5aa6;
+      border-color: #3c5aa6;
     }
     
     @media (max-width: 480px) {
@@ -167,6 +190,11 @@
         margin-bottom: 0.3em;
         padding: 8px 12px;
         font-size: 13px;
+      }
+      
+      .btn-primary-small {
+        width: 100%;
+        padding: 10px 16px;
       }
     }
   </style>
