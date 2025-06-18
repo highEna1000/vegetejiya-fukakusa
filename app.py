@@ -43,6 +43,7 @@ class User(UserMixin, db.Model):
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False, unique=True)
+    order_index = db.Column(db.Integer, default=0)
 
 class UserSkill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -379,7 +380,9 @@ def manage_tasks(task_id=None):
                 task_to_edit.name = form.name.data
                 flash(f'仕事「{task_to_edit.name}」を更新しました。')
             else:
-                new_task = Task(name=form.name.data)
+                # 新しいタスクのorder_indexを最大値+1に設定
+                max_order = db.session.query(db.func.max(Task.order_index)).scalar() or 0
+                new_task = Task(name=form.name.data, order_index=max_order + 1)
                 db.session.add(new_task)
                 db.session.flush()  # new_taskのIDを取得するため
                 
@@ -392,8 +395,29 @@ def manage_tasks(task_id=None):
                 flash(f'仕事「{new_task.name}」を追加しました。')
             db.session.commit()
             return redirect(url_for('manage_tasks'))
-    tasks = Task.query.order_by(Task.id).all()
+    tasks = Task.query.order_by(Task.order_index, Task.id).all()
     return render_template('admin_tasks.html', tasks=tasks, form=form)
+
+@app.route('/admin/reorder_tasks', methods=['POST'])
+@admin_required
+def reorder_tasks():
+    task_ids = request.json.get('task_ids', [])
+    
+    if not task_ids:
+        return jsonify({'success': False, 'message': 'タスクIDが提供されていません。'})
+    
+    try:
+        for index, task_id in enumerate(task_ids):
+            task = Task.query.get(task_id)
+            if task:
+                task.order_index = index
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'タスクの順序を更新しました。'})
+    
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'エラーが発生しました: {str(e)}'})
 
 @app.route('/admin/delete_task/<int:task_id>', methods=['POST'])
 @admin_required
