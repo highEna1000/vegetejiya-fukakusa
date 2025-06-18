@@ -26,7 +26,7 @@
             <div class="skill-info">
               <span class="task-name">{{ skill.task.name }}</span>
               <div class="skill-toggle">
-                <input type="checkbox" name="task_{{ skill.task_id }}" id="task_{{ skill.task_id }}" 
+                <input type="checkbox" name="task_{{ skill.task_id }}" id="mobile_task_{{ skill.task_id }}" 
                        {% if skill.can_do %}checked{% endif %} class="skill-checkbox">
                 <span class="toggle-slider"></span>
               </div>
@@ -51,7 +51,7 @@
               <tr>
                 <td>{{ skill.task.name }}</td>
                 <td style="text-align: center;">
-                  <input type="checkbox" name="task_{{ skill.task_id }}" 
+                  <input type="checkbox" name="task_{{ skill.task_id }}" id="desktop_task_{{ skill.task_id }}"
                          {% if skill.can_do %}checked{% endif %} class="skill-checkbox-desktop">
                 </td>
               </tr>
@@ -316,4 +316,32 @@
       }
     }
   </style>
+
+  <script>
+    // モバイル・デスクトップ表示切り替え時にフォーム要素を無効/有効化
+    function updateFormElements() {
+      const isMobile = window.matchMedia('(max-width: 768px)').matches;
+      
+      // モバイル用チェックボックス
+      const mobileCheckboxes = document.querySelectorAll('.mobile-skills input[type="checkbox"]');
+      // デスクトップ用チェックボックス
+      const desktopCheckboxes = document.querySelectorAll('.desktop-skills input[type="checkbox"]');
+      
+      if (isMobile) {
+        // モバイル表示時：モバイル用を有効、デスクトップ用を無効
+        mobileCheckboxes.forEach(cb => cb.disabled = false);
+        desktopCheckboxes.forEach(cb => cb.disabled = true);
+      } else {
+        // デスクトップ表示時：デスクトップ用を有効、モバイル用を無効
+        mobileCheckboxes.forEach(cb => cb.disabled = true);
+        desktopCheckboxes.forEach(cb => cb.disabled = false);
+      }
+    }
+    
+    // 初期化
+    document.addEventListener('DOMContentLoaded', updateFormElements);
+    
+    // 画面サイズ変更時
+    window.addEventListener('resize', updateFormElements);
+  </script>
 {% endblock %}
