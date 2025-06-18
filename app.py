@@ -437,19 +437,32 @@ def delete_task(task_id):
 # -----------------------------------------------------------
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
-        if not User.query.filter_by(username='admin').first():
-            print("Creating admin user...")
-            admin_user = User(username='admin', role='admin', is_first_login=False)
-            admin_user.set_password('password')
-            db.session.add(admin_user)
-        # if not Task.query.first():
-        #     print("Creating initial tasks...")
-        #     tasks_list = ['レジ打ち', '品出し', '清掃', '発注作業', 'クレーム対応']
-        #     for task_name in tasks_list:
-        #         db.session.add(Task(name=task_name))
-        db.session.commit()
-        print("Database initialized.")
+        try:
+            db.create_all()
+            
+            # 管理者ユーザーを作成
+            if not User.query.filter_by(username='admin').first():
+                print("Creating admin user...")
+                admin_user = User(username='admin', role='admin', is_first_login=False)
+                admin_user.set_password('password')
+                db.session.add(admin_user)
+            
+            # 既存タスクのorder_indexを修正（NULLの場合）
+            try:
+                tasks_without_order = Task.query.filter((Task.order_index.is_(None)) | (Task.order_index == 0)).all()
+                if tasks_without_order:
+                    print(f"Updating order_index for {len(tasks_without_order)} tasks...")
+                    for index, task in enumerate(tasks_without_order):
+                        task.order_index = index + 1
+            except Exception as e:
+                print(f"Note: order_index update skipped: {e}")
+            
+            db.session.commit()
+            print("Database initialized.")
+            
+        except Exception as e:
+            print(f"Database initialization error: {e}")
+            db.session.rollback()
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     app.run(host='0.0.0.0', port=port, debug=debug)
