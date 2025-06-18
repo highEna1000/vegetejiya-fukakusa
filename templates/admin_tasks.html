@@ -6,16 +6,19 @@
   <div class="tasks-layout">
     <!-- 仕事一覧セクション -->
     <div class="tasks-section">
-      <h2>仕事リスト一覧</h2>
+      <h2>仕事一覧</h2>
       
       <!-- モバイル用カード表示 -->
       <div class="mobile-task-cards" id="mobile-task-list">
         {% for task in tasks %}
         <div class="task-card" data-task-id="{{ task.id }}">
           <div class="task-header">
-            <div class="drag-handle">⋮⋮</div>
             <div class="task-info">
               <h3>{{ task.name }}</h3>
+            </div>
+            <div class="mobile-order-controls">
+              <button onclick="moveTaskMobile({{ task.id }}, 'up')" class="btn-order" {% if loop.first %}disabled{% endif %}>↑</button>
+              <button onclick="moveTaskMobile({{ task.id }}, 'down')" class="btn-order" {% if loop.last %}disabled{% endif %}>↓</button>
             </div>
           </div>
           <div class="task-actions">
@@ -45,10 +48,10 @@
               <tr data-task-id="{{ task.id }}">
                 <td style="text-align: left; padding-left: 10px;">{{ task.name }}</td>
                 <td style="width: 60px;">
-                  <button onclick="moveTask({{ task.id }}, 'up')" class="btn btn-small" {% if loop.first %}disabled{% endif %}>↑</button>
+                  <button onclick="moveTaskDesktop({{ task.id }}, 'up')" class="btn btn-small" {% if loop.first %}disabled{% endif %}>↑</button>
                 </td>
                 <td style="width: 60px;">
-                  <button onclick="moveTask({{ task.id }}, 'down')" class="btn btn-small" {% if loop.last %}disabled{% endif %}>↓</button>
+                  <button onclick="moveTaskDesktop({{ task.id }}, 'down')" class="btn btn-small" {% if loop.last %}disabled{% endif %}>↓</button>
                 </td>
                 <td style="width: 80px;">
                   <a href="{{ url_for('manage_tasks', task_id=task.id) }}" class="btn btn-small">編集</a>
@@ -109,39 +112,56 @@
       border-radius: 8px;
       padding: 1em;
       margin-bottom: 1em;
-      border-left: 4px solid #6aa84e;
-      cursor: move;
-      transition: transform 0.2s, box-shadow 0.2s;
+      border-left: 4px solid #28a745;
+      transition: box-shadow 0.2s;
     }
     
-    .task-card.dragging {
-      transform: rotate(5deg);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-      z-index: 1000;
+    .task-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
     .task-header {
       display: flex;
       align-items: center;
-      gap: 0.5em;
+      justify-content: space-between;
       margin-bottom: 1em;
     }
     
-    .drag-handle {
-      color: #6c757d;
-      font-size: 1.2em;
-      cursor: grab;
-      user-select: none;
-      padding: 0.2em;
+    .mobile-order-controls {
+      display: flex;
+      gap: 0.3em;
     }
     
-    .drag-handle:active {
-      cursor: grabbing;
+    .btn-order {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.3em 0.6em;
+      font-size: 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      min-width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-order:hover:not(:disabled) {
+      background-color: #218838;
+    }
+    
+    .btn-order:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      opacity: 0.6;
     }
     
     .task-info h3 {
       margin: 0 0 1em 0;
-      color: #6aa84e;
+      color: #28a745;
       font-size: 1.1em;
     }
     
@@ -196,8 +216,8 @@
     
     /* 管理者用ボタンサイズ統一 */
     .btn-custom-primary-small {
-      background-color: #6aa84e !important;
-      border-color: #6aa84e !important;
+      background-color: #28a745 !important;
+      border-color: #28a745 !important;
       color: white !important;
       padding: 8px 16px !important;
       font-size: 14px !important;
@@ -209,8 +229,8 @@
     }
     
     .btn-custom-primary-small:hover {
-      background-color: #5a9545 !important;
-      border-color: #5a9545 !important;
+      background-color: #218838 !important;
+      border-color: #218838 !important;
     }
     
     @media (max-width: 480px) {
@@ -243,7 +263,7 @@
   
   <script>
     // デスクトップ用順序変更
-    function moveTask(taskId, direction) {
+    function moveTaskDesktop(taskId, direction) {
       const taskList = Array.from(document.querySelectorAll('#desktop-task-list tr[data-task-id]'));
       const currentIndex = taskList.findIndex(row => row.dataset.taskId == taskId);
       
@@ -273,90 +293,53 @@
       saveTaskOrder(newTaskIds);
     }
     
-    // モバイル用ドラッグアンドドロップ
-    let draggedElement = null;
-    let placeholder = null;
-    
-    function initMobileDragAndDrop() {
-      const taskCards = document.querySelectorAll('.task-card');
+    // モバイル用順序変更
+    function moveTaskMobile(taskId, direction) {
+      const taskList = Array.from(document.querySelectorAll('#mobile-task-list .task-card[data-task-id]'));
+      const currentIndex = taskList.findIndex(card => card.dataset.taskId == taskId);
       
-      taskCards.forEach(card => {
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragover', handleDragOver);
-        card.addEventListener('drop', handleDrop);
-        card.addEventListener('dragend', handleDragEnd);
-        card.setAttribute('draggable', 'true');
+      let newIndex;
+      if (direction === 'up' && currentIndex > 0) {
+        newIndex = currentIndex - 1;
+      } else if (direction === 'down' && currentIndex < taskList.length - 1) {
+        newIndex = currentIndex + 1;
+      } else {
+        return;
+      }
+      
+      // DOMでの順序変更
+      const currentCard = taskList[currentIndex];
+      const targetCard = taskList[newIndex];
+      
+      if (direction === 'up') {
+        targetCard.parentNode.insertBefore(currentCard, targetCard);
+      } else {
+        targetCard.parentNode.insertBefore(currentCard, targetCard.nextSibling);
+      }
+      
+      // ボタンの状態を更新
+      updateMobileButtonStates();
+      
+      // サーバーに順序を送信
+      const newTaskIds = Array.from(document.querySelectorAll('#mobile-task-list .task-card[data-task-id]'))
+        .map(card => parseInt(card.dataset.taskId));
+      
+      saveTaskOrder(newTaskIds);
+    }
+    
+    // モバイルボタン状態更新
+    function updateMobileButtonStates() {
+      const taskCards = document.querySelectorAll('#mobile-task-list .task-card[data-task-id]');
+      taskCards.forEach((card, index) => {
+        const upBtn = card.querySelector('.btn-order[onclick*="up"]');
+        const downBtn = card.querySelector('.btn-order[onclick*="down"]');
+        
+        if (upBtn) upBtn.disabled = (index === 0);
+        if (downBtn) downBtn.disabled = (index === taskCards.length - 1);
       });
     }
     
-    function handleDragStart(e) {
-      draggedElement = this;
-      this.classList.add('dragging');
-      
-      // プレースホルダーを作成
-      placeholder = document.createElement('div');
-      placeholder.className = 'task-card placeholder';
-      placeholder.style.height = this.offsetHeight + 'px';
-      placeholder.style.background = '#e9ecef';
-      placeholder.style.border = '2px dashed #6aa84e';
-      placeholder.innerHTML = '<div style="text-align: center; padding: 1em; color: #6c757d;">ここにドロップ</div>';
-    }
-    
-    function handleDragOver(e) {
-      e.preventDefault();
-      
-      if (this === draggedElement) return;
-      
-      const container = this.parentNode;
-      const afterElement = getDragAfterElement(container, e.clientY);
-      
-      if (afterElement == null) {
-        container.appendChild(placeholder);
-      } else {
-        container.insertBefore(placeholder, afterElement);
-      }
-    }
-    
-    function handleDrop(e) {
-      e.preventDefault();
-      
-      if (placeholder && placeholder.parentNode) {
-        placeholder.parentNode.insertBefore(draggedElement, placeholder);
-        placeholder.remove();
-        
-        // 新しい順序をサーバーに送信
-        const newTaskIds = Array.from(document.querySelectorAll('.task-card[data-task-id]'))
-          .map(card => parseInt(card.dataset.taskId));
-        
-        saveTaskOrder(newTaskIds);
-      }
-    }
-    
-    function handleDragEnd(e) {
-      this.classList.remove('dragging');
-      
-      if (placeholder && placeholder.parentNode) {
-        placeholder.remove();
-      }
-      
-      draggedElement = null;
-      placeholder = null;
-    }
-    
-    function getDragAfterElement(container, y) {
-      const draggableElements = [...container.querySelectorAll('.task-card:not(.dragging)')];
-      
-      return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
-      }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
+    // 旧ドラッグアンドドロップコードを削除し、シンプルなボタン操作に変更
     
     // サーバーに順序を保存
     function saveTaskOrder(taskIds) {
@@ -380,8 +363,9 @@
     
     // 初期化
     document.addEventListener('DOMContentLoaded', function() {
+      // モバイルボタン状態を初期化
       if (window.matchMedia('(max-width: 768px)').matches) {
-        initMobileDragAndDrop();
+        updateMobileButtonStates();
       }
     });
   </script>
