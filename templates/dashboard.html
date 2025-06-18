@@ -31,7 +31,6 @@
   <!-- スマホ用カード表示 -->
   <div class="mobile-cards">
     {% for user in users %}
-    {# スタッフは他のスタッフを見ることができ、管理者は全員を見ることができる #%}
     {% if current_user.role == 'admin' or (current_user.role == 'staff' and user.role == 'staff') %}
     <div class="user-card">
       <div class="user-header" onclick="toggleSkills({{ user.id }})">
@@ -83,8 +82,7 @@
       </thead>
       <tbody>
         {% for user in users %}
-        {# スタッフは他のスタッフを見ることができ、管理者は全員を見ることができる #%}
-    {% if current_user.role == 'admin' or (current_user.role == 'staff' and user.role == 'staff') %}
+        {% if current_user.role == 'admin' or (current_user.role == 'staff' and user.role == 'staff') %}
         <tr>
           <td>{{ user.username }} {% if current_user.role == 'admin' and user.role == 'admin' %}(管理者){% endif %}</td>
           {% for task in tasks %}
