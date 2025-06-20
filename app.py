@@ -17,7 +17,11 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your_secret_key_change_
 # データベース設定（環境に応じて切り替え）
 if os.environ.get('DATABASE_URL'):
     # 本番環境: PostgreSQL（Render.com等）
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+    database_url = os.environ.get('DATABASE_URL')
+    # PostgreSQLドライバーの指定（psycopg3を使用）
+    if database_url.startswith('postgresql://'):
+        database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
     # 開発環境: SQLite
     basedir = os.path.abspath(os.path.dirname(__file__))
