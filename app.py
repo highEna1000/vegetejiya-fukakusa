@@ -450,10 +450,7 @@ def delete_task(task_id):
 def init_database():
     """データベースを初期化する関数"""
     try:
-        # PostgreSQLでスキーマが変更された場合、テーブルを再作成
-        if os.environ.get('DATABASE_URL'):
-            print("Recreating tables for PostgreSQL schema update...")
-            db.drop_all()
+        # データベーステーブルを作成（既存テーブルは保持）
         db.create_all()
         
         # 管理者ユーザーを作成（存在しない場合のみ）
