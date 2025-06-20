@@ -40,7 +40,7 @@ login_manager.login_view = 'login'
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(120), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(80), nullable=False, default='staff')
     is_first_login = db.Column(db.Boolean, default=True)
     order_index = db.Column(db.Integer, default=0)
@@ -450,6 +450,10 @@ def delete_task(task_id):
 def init_database():
     """データベースを初期化する関数"""
     try:
+        # PostgreSQLでスキーマが変更された場合、テーブルを再作成
+        if os.environ.get('DATABASE_URL'):
+            print("Recreating tables for PostgreSQL schema update...")
+            db.drop_all()
         db.create_all()
         
         # 管理者ユーザーを作成（存在しない場合のみ）
