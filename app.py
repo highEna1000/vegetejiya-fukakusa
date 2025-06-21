@@ -414,8 +414,8 @@ def manage_tasks(task_id=None):
 @admin_required
 def skill_stats():
     """スキル習得率統計ページ（管理者専用）"""
-    # 全スタッフと全タスクを取得
-    users = User.query.filter_by(role='staff').all()
+    # 全ユーザー（スタッフ + 管理者）と全タスクを取得
+    users = User.query.all()
     tasks = Task.query.order_by(Task.order_index, Task.id).all()
     
     # スキル習得率を計算
