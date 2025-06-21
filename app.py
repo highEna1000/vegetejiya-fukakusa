@@ -145,7 +145,7 @@ def initial_setup():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    users = User.query.order_by(User.order_index, User.id).all()
+    users = User.query.filter(User.username != 'admin').order_by(User.order_index, User.id).all()
     tasks = Task.query.all()
     skill_data = {}
     for user in users:
@@ -414,8 +414,8 @@ def manage_tasks(task_id=None):
 @admin_required
 def skill_stats():
     """スキル習得率統計ページ（管理者専用）"""
-    # 全ユーザー（スタッフ + 管理者）と全タスクを取得
-    users = User.query.all()
+    # 'admin'ユーザー以外のユーザーと全タスクを取得
+    users = User.query.filter(User.username != 'admin').all()
     tasks = Task.query.order_by(Task.order_index, Task.id).all()
     
     # スキル習得率を計算
@@ -424,8 +424,12 @@ def skill_stats():
     
     for task in tasks:
         if total_users > 0:
-            # このタスクができるユーザー数を計算
-            skilled_users = UserSkill.query.filter_by(task_id=task.id, can_do=True).all()
+            # このタスクができるユーザー数を計算（'admin'ユーザーを除外）
+            skilled_users = UserSkill.query.join(User).filter(
+                UserSkill.task_id == task.id,
+                UserSkill.can_do == True,
+                User.username != 'admin'
+            ).all()
             skilled_count = len(skilled_users)
             
             # 習得率を計算
