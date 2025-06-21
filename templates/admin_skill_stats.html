@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block title %}スキル習得率統計{% endblock %}
+
+{% block content %}
+  <div class="skill-stats-container">
+    <div class="stats-header">
+      <h1>スキル習得率統計</h1>
+      <p class="stats-description">各スキルの習得状況を確認できます（管理者専用）</p>
+      <div class="stats-summary">
+        <span class="total-staff">総スタッフ数: {{ total_users }}人</span>
+      </div>
+    </div>
+
+    <!-- スキル統計一覧 -->
+    <div class="stats-grid">
+      {% for stat in skill_statistics %}
+      <div class="skill-stat-card">
+        <div class="skill-header">
+          <h3 class="skill-name">{{ stat.task.name }}</h3>
+          <div class="skill-percentage">{{ stat.mastery_rate }}%</div>
+        </div>
+        
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ stat.mastery_rate }}%"></div>
+          </div>
+          <div class="progress-text">
+            {{ stat.skilled_count }}人 / {{ stat.total_count }}人
+          </div>
+        </div>
+        
+        {% if stat.skilled_users %}
+        <div class="skilled-users">
+          <strong>習得者:</strong>
+          <div class="user-tags">
+            {% for user in stat.skilled_users %}
+            <span class="user-tag">{{ user }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <div class="no-skilled-users">
+          <span class="no-users-text">まだ習得者がいません</span>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- 全体統計サマリー -->
+    <div class="overall-stats">
+      <h2>全体統計</h2>
+      <div class="stats-summary-grid">
+        <div class="summary-card">
+          <div class="summary-number">{{ skill_statistics|length }}</div>
+          <div class="summary-label">総スキル数</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-number">
+            {% set avg_rate = (skill_statistics|sum(attribute='mastery_rate') / skill_statistics|length) if skill_statistics else 0 %}
+            {{ "%.1f"|format(avg_rate) }}%
+          </div>
+          <div class="summary-label">平均習得率</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-number">
+            {% set high_mastery = skill_statistics|selectattr('mastery_rate', 'ge', 80)|list|length %}
+            {{ high_mastery }}
+          </div>
+          <div class="summary-label">習得率80%以上</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .skill-stats-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1em;
+    }
+
+    .stats-header {
+      text-align: center;
+      margin-bottom: 2em;
+      padding-bottom: 1em;
+      border-bottom: 2px solid #eee;
+    }
+
+    .stats-header h1 {
+      margin-bottom: 0.5em;
+      color: #28a745;
+    }
+
+    .stats-description {
+      color: #6c757d;
+      margin-bottom: 1em;
+    }
+
+    .stats-summary {
+      background: #f8f9fa;
+      padding: 0.8em 1.2em;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .total-staff {
+      font-weight: bold;
+      color: #28a745;
+    }
+
+    /* スキル統計グリッド */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5em;
+      margin-bottom: 3em;
+    }
+
+    .skill-stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5em;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-left: 4px solid #28a745;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .skill-stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+
+    .skill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1em;
+    }
+
+    .skill-name {
+      margin: 0;
+      color: #333;
+      font-size: 1.2em;
+    }
+
+    .skill-percentage {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #28a745;
+    }
+
+    /* プログレスバー */
+    .progress-container {
+      margin-bottom: 1.2em;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #e9ecef;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 0.5em;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #28a745, #20c997);
+      border-radius: 6px;
+      transition: width 0.8s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      font-size: 0.9em;
+      color: #6c757d;
+      font-weight: 500;
+    }
+
+    /* 習得者表示 */
+    .skilled-users {
+      border-top: 1px solid #eee;
+      padding-top: 1em;
+    }
+
+    .skilled-users strong {
+      color: #333;
+      font-size: 0.9em;
+      display: block;
+      margin-bottom: 0.5em;
+    }
+
+    .user-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4em;
+    }
+
+    .user-tag {
+      background: #28a745;
+      color: white;
+      padding: 0.3em 0.8em;
+      border-radius: 15px;
+      font-size: 0.8em;
+      font-weight: 500;
+    }
+
+    .no-skilled-users {
+      border-top: 1px solid #eee;
+      padding-top: 1em;
+      text-align: center;
+    }
+
+    .no-users-text {
+      color: #6c757d;
+      font-style: italic;
+      font-size: 0.9em;
+    }
+
+    /* 全体統計 */
+    .overall-stats {
+      background: #f8f9fa;
+      padding: 2em;
+      border-radius: 12px;
+      margin-top: 2em;
+    }
+
+    .overall-stats h2 {
+      text-align: center;
+      margin-bottom: 1.5em;
+      color: #28a745;
+    }
+
+    .stats-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5em;
+    }
+
+    .summary-card {
+      background: white;
+      padding: 1.5em;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .summary-number {
+      font-size: 2.5em;
+      font-weight: bold;
+      color: #28a745;
+      margin-bottom: 0.3em;
+    }
+
+    .summary-label {
+      color: #6c757d;
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    /* モバイル対応 */
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1em;
+      }
+
+      .skill-stat-card {
+        padding: 1.2em;
+      }
+
+      .skill-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5em;
+      }
+
+      .skill-percentage {
+        font-size: 1.5em;
+      }
+
+      .stats-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 1em;
+      }
+
+      .overall-stats {
+        padding: 1.5em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .skill-stats-container {
+        padding: 0.5em;
+      }
+
+      .skill-stat-card {
+        padding: 1em;
+      }
+
+      .user-tags {
+        justify-content: center;
+      }
+    }
+  </style>
+{% endblock %}

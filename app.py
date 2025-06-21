@@ -410,6 +410,50 @@ def manage_tasks(task_id=None):
     tasks = Task.query.order_by(Task.order_index, Task.id).all()
     return render_template('admin_tasks.html', tasks=tasks, form=form)
 
+@app.route('/admin/skill_stats')
+@admin_required
+def skill_stats():
+    """スキル習得率統計ページ（管理者専用）"""
+    # 全スタッフと全タスクを取得
+    users = User.query.filter_by(role='staff').all()
+    tasks = Task.query.order_by(Task.order_index, Task.id).all()
+    
+    # スキル習得率を計算
+    skill_statistics = []
+    total_users = len(users)
+    
+    for task in tasks:
+        if total_users > 0:
+            # このタスクができるユーザー数を計算
+            skilled_users = UserSkill.query.filter_by(task_id=task.id, can_do=True).all()
+            skilled_count = len(skilled_users)
+            
+            # 習得率を計算
+            mastery_rate = (skilled_count / total_users) * 100
+            
+            # 習得者の名前を取得
+            skilled_user_names = [User.query.get(skill.user_id).username for skill in skilled_users]
+            
+            skill_statistics.append({
+                'task': task,
+                'skilled_count': skilled_count,
+                'total_count': total_users,
+                'mastery_rate': round(mastery_rate, 1),
+                'skilled_users': skilled_user_names
+            })
+        else:
+            skill_statistics.append({
+                'task': task,
+                'skilled_count': 0,
+                'total_count': 0,
+                'mastery_rate': 0,
+                'skilled_users': []
+            })
+    
+    return render_template('admin_skill_stats.html', 
+                         skill_statistics=skill_statistics,
+                         total_users=total_users)
+
 @app.route('/admin/reorder_tasks', methods=['POST'])
 @admin_required
 def reorder_tasks():

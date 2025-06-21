@@ -289,7 +289,7 @@
             {% if current_user.role == 'admin' %}
               <a href="{{ url_for('manage_users') }}">スタッフ管理</a>
               <a href="{{ url_for('manage_tasks') }}">仕事管理</a>
-
+              <a href="{{ url_for('skill_stats') }}">スキル統計</a>
             {% endif %}
           </div>
           <div class="nav-right">
