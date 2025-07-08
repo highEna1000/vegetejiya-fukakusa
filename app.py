@@ -64,6 +64,11 @@ class UserSkill(db.Model):
     can_do = db.Column(db.Boolean, default=False)
     task = db.relationship('Task')
 
+class Settings(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.String(255), nullable=False)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -96,6 +101,13 @@ class EditUserForm(FlaskForm):
 class TaskForm(FlaskForm):
     name = StringField('仕事内容', validators=[DataRequired(), Length(max=120)])
     submit = SubmitField('保存する')
+
+class SettingsForm(FlaskForm):
+    skill_visibility = SelectField('スキル表示設定', 
+                                   choices=[('restricted', 'スタッフは自分のスキルのみ表示'), 
+                                           ('all', '全スタッフが互いのスキルを表示')],
+                                   validators=[DataRequired()])
+    submit = SubmitField('設定を保存')
 
 
 # -----------------------------------------------------------
@@ -145,12 +157,23 @@ def initial_setup():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # スキル表示設定を取得
+    skill_visibility_setting = Settings.query.filter_by(key='skill_visibility').first()
+    is_restricted = skill_visibility_setting and skill_visibility_setting.value == 'restricted'
+    
+    # ユーザー一覧を取得
     users = User.query.filter(User.username != 'admin').order_by(User.order_index, User.id).all()
+    
+    # スキル表示制限がある場合、スタッフは自分のみ表示
+    if is_restricted and current_user.role != 'admin':
+        users = [user for user in users if user.id == current_user.id]
+    
     tasks = Task.query.all()
     skill_data = {}
     for user in users:
         skill_data[user.id] = {skill.task_id: skill.can_do for skill in user.skills}
-    return render_template('dashboard.html', users=users, tasks=tasks, skill_data=skill_data)
+    
+    return render_template('dashboard.html', users=users, tasks=tasks, skill_data=skill_data, is_restricted=is_restricted)
 
 # -----------------------------------------------------------
 # 5. 管理者用ページ
@@ -492,6 +515,33 @@ def delete_task(task_id):
     flash(f'仕事「{task_to_delete.name}」を削除しました。')
     return redirect(url_for('manage_tasks'))
 
+@app.route('/admin/settings', methods=['GET', 'POST'])
+@admin_required
+def admin_settings():
+    form = SettingsForm()
+    
+    if form.validate_on_submit():
+        # スキル表示設定を更新
+        skill_visibility_setting = Settings.query.filter_by(key='skill_visibility').first()
+        if skill_visibility_setting:
+            skill_visibility_setting.value = form.skill_visibility.data
+        else:
+            skill_visibility_setting = Settings(key='skill_visibility', value=form.skill_visibility.data)
+            db.session.add(skill_visibility_setting)
+        
+        db.session.commit()
+        flash('設定を更新しました。')
+        return redirect(url_for('admin_settings'))
+    
+    # 現在の設定を取得してフォームに反映
+    skill_visibility_setting = Settings.query.filter_by(key='skill_visibility').first()
+    if skill_visibility_setting:
+        form.skill_visibility.data = skill_visibility_setting.value
+    else:
+        form.skill_visibility.data = 'restricted'  # デフォルト値
+    
+    return render_template('admin_settings.html', form=form)
+
 # -----------------------------------------------------------
 # 6. アプリケーションの実行と初期設定
 # -----------------------------------------------------------
@@ -517,6 +567,12 @@ def init_database():
                     task.order_index = index + 1
         except Exception as e:
             print(f"Note: order_index update skipped: {e}")
+        
+        # 設定を初期化（存在しない場合のみ）
+        if not Settings.query.filter_by(key='skill_visibility').first():
+            print("Creating initial settings...")
+            skill_visibility_setting = Settings(key='skill_visibility', value='restricted')
+            db.session.add(skill_visibility_setting)
         
         db.session.commit()
         print("Database initialized.")

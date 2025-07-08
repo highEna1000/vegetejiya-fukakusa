@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}オプション設定{% endblock %}
+
+{% block content %}
+  <div class="admin-layout">
+    <div class="settings-section">
+      <h2>オプション設定</h2>
+      
+      <form method="POST" class="settings-form">
+        {{ form.hidden_tag() }}
+        
+        <div class="form-group">
+          {{ form.skill_visibility.label(class="form-label") }}
+          {{ form.skill_visibility(class="form-select") }}
+          <small class="form-help">
+            「スタッフは自分のスキルのみ表示」：スタッフは自分のスキルのみ閲覧可能<br>
+            「全スタッフが互いのスキルを表示」：全スタッフが互いのスキルを閲覧可能
+          </small>
+        </div>
+        
+        <div class="form-actions">
+          {{ form.submit(class="btn btn-primary") }}
+          <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">戻る</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
