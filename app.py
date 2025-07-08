@@ -615,35 +615,45 @@ def create_sample_data():
         print("Sample data created.")
 
 if __name__ == '__main__':
-    with app.app_context():
-        # 環境変数でサンプルデータ作成を制御
-        if os.environ.get('SKIP_DB_INIT') != 'true':
-            init_database()
-            
-            # Supabase接続テスト
-            if os.environ.get('DATABASE_URL') and 'supabase.com' in os.environ.get('DATABASE_URL', ''):
-                print("🔄 Supabase環境を検出しました")
-                try:
-                    # 基本的な接続テスト
-                    user_count = User.query.count()
-                    task_count = Task.query.count()
-                    skill_count = UserSkill.query.count()
-                    setting_count = Settings.query.count()
-                    print(f"✅ Supabase接続成功！")
-                    print(f"📊 現在のデータ:")
-                    print(f"- ユーザー: {user_count}件")
-                    print(f"- タスク: {task_count}件")
-                    print(f"- スキル: {skill_count}件")
-                    print(f"- 設定: {setting_count}件")
-                except Exception as e:
-                    print(f"❌ Supabase接続エラー: {e}")
-            
-            # 開発環境でサンプルデータを作成
-            if os.environ.get('CREATE_SAMPLE_DATA') == 'true' or not os.environ.get('DATABASE_URL'):
-                create_sample_data()
-        else:
-            print("Database initialization skipped.")
+    print("🚀 アプリケーションを起動しています...")
+    
+    # データベース初期化の実行（エラーが発生した場合は停止）
+    if os.environ.get('SKIP_DB_INIT') != 'true':
+        print("📊 データベース初期化中...")
+        try:
+            with app.app_context():
+                init_database()
+                
+                # Supabase接続テスト（簡素化）
+                if os.environ.get('DATABASE_URL') and 'supabase.com' in os.environ.get('DATABASE_URL', ''):
+                    print("✅ Supabase環境を検出しました")
+                    try:
+                        user_count = User.query.count()
+                        print(f"✅ Supabase接続成功！ユーザー: {user_count}件")
+                    except Exception as e:
+                        print(f"⚠️ Supabase接続テストをスキップ: {e}")
+                
+                # 開発環境でサンプルデータを作成
+                if os.environ.get('CREATE_SAMPLE_DATA') == 'true' or not os.environ.get('DATABASE_URL'):
+                    create_sample_data()
+                    
+        except Exception as e:
+            print(f"❌ データベース初期化エラー: {e}")
+            # 本番環境では初期化エラーがあっても続行
+            if os.environ.get('DATABASE_URL'):
+                print("⚠️ 本番環境のため続行します")
+            else:
+                raise  # 開発環境では停止
+    else:
+        print("Database initialization skipped.")
             
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    print(f"🌐 サーバーを起動中... ポート: {port}")
+    
+    # アプリケーション起動
+    try:
+        app.run(host='0.0.0.0', port=port, debug=debug)
+    except Exception as e:
+        print(f"❌ アプリケーション起動エラー: {e}")
+        raise
