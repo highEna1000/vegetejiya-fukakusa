@@ -48,14 +48,7 @@
         </div>
       </div>
       <div class="skills-grid" id="skills-{{ user.id }}" style="display: none;">
-        {% set current_level = None %}
         {% for task in tasks %}
-          {% if task.level != current_level %}
-            {% set current_level = task.level %}
-            <div class="level-header-mobile">
-              <h4>レベル{{ task.level }}</h4>
-            </div>
-          {% endif %}
           <div class="skill-item">
             <span class="skill-name">{{ task.name }}</span>
             <span class="skill-status">
@@ -79,21 +72,6 @@
       <thead>
         <tr>
           <th>スタッフ名</th>
-          {% set current_level = None %}
-          {% for task in tasks %}
-            {% if task.level != current_level %}
-              {% set current_level = task.level %}
-              <th class="level-header-desktop" colspan="{{ tasks|selectattr('level', 'equalto', task.level)|list|length }}">
-                レベル{{ task.level }}
-              </th>
-            {% endif %}
-          {% endfor %}
-          {% if current_user.role == 'admin' %}
-            <th>操作</th>
-          {% endif %}
-        </tr>
-        <tr>
-          <th></th>
           {% for task in tasks %}
             <th>{{ task.name }}</th>
           {% endfor %}

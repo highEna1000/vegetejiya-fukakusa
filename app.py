@@ -56,7 +56,6 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False, unique=True)
     order_index = db.Column(db.Integer, default=0)
-    level = db.Column(db.Integer, default=1)
 
 class UserSkill(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -101,10 +100,6 @@ class EditUserForm(FlaskForm):
 
 class TaskForm(FlaskForm):
     name = StringField('仕事内容', validators=[DataRequired(), Length(max=120)])
-    level = SelectField('レベル', 
-                       choices=[('1', 'レベル1'), ('2', 'レベル2'), ('3', 'レベル3')],
-                       validators=[DataRequired()],
-                       default='1')
     submit = SubmitField('保存する')
 
 class SettingsForm(FlaskForm):
@@ -147,7 +142,7 @@ def initial_setup():
     if not current_user.is_first_login:
         return redirect(url_for('dashboard'))
     if request.method == 'POST':
-        tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+        tasks = Task.query.order_by(Task.order_index, Task.id).all()
         for task in tasks:
             can_do = request.form.get(f'task_{task.id}') == 'on'
             skill = UserSkill(user_id=current_user.id, task_id=task.id, can_do=can_do)
@@ -156,7 +151,7 @@ def initial_setup():
         db.session.commit()
         flash('スキルを登録しました！')
         return redirect(url_for('dashboard'))
-    tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+    tasks = Task.query.order_by(Task.order_index, Task.id).all()
     return render_template('initial_setup.html', tasks=tasks)
 
 @app.route('/dashboard')
@@ -173,7 +168,7 @@ def dashboard():
     if is_restricted and current_user.role != 'admin':
         users = [user for user in users if user.id == current_user.id]
     
-    tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+    tasks = Task.query.order_by(Task.order_index, Task.id).all()
     skill_data = {}
     for user in users:
         skill_data[user.id] = {skill.task_id: skill.can_do for skill in user.skills}
@@ -233,7 +228,7 @@ def edit_skills(user_id):
 
     if request.method == 'POST':
         # 全てのタスクを取得
-        tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+        tasks = Task.query.order_by(Task.order_index, Task.id).all()
         
         # ユーザーがまだスキル登録していない場合、新規作成
         if not user_to_edit.skills:
@@ -262,7 +257,7 @@ def edit_skills(user_id):
         return redirect(url_for('dashboard'))
 
     # 全てのタスクを取得
-    all_tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+    all_tasks = Task.query.order_by(Task.order_index, Task.id).all()
     
     # ユーザーの既存スキルを辞書形式で取得
     existing_skills = {skill.task_id: skill for skill in user_to_edit.skills}
@@ -283,7 +278,7 @@ def edit_skills(user_id):
 def my_skills():
     if request.method == 'POST':
         # 全てのタスクを取得
-        tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+        tasks = Task.query.order_by(Task.order_index, Task.id).all()
         
         # ユーザーがまだスキル登録していない場合、新規作成
         if not current_user.skills:
@@ -312,7 +307,7 @@ def my_skills():
         return redirect(url_for('dashboard'))
 
     # 全てのタスクを取得
-    all_tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+    all_tasks = Task.query.order_by(Task.order_index, Task.id).all()
     
     # ユーザーの既存スキルを辞書形式で取得
     existing_skills = {skill.task_id: skill for skill in current_user.skills}
@@ -418,12 +413,11 @@ def manage_tasks(task_id=None):
         else:
             if task_to_edit:
                 task_to_edit.name = form.name.data
-                task_to_edit.level = int(form.level.data)
                 flash(f'仕事「{task_to_edit.name}」を更新しました。')
             else:
                 # 新しいタスクのorder_indexを最大値+1に設定
                 max_order = db.session.query(db.func.max(Task.order_index)).scalar() or 0
-                new_task = Task(name=form.name.data, level=int(form.level.data), order_index=max_order + 1)
+                new_task = Task(name=form.name.data, order_index=max_order + 1)
                 db.session.add(new_task)
                 db.session.flush()  # new_taskのIDを取得するため
                 
@@ -436,7 +430,7 @@ def manage_tasks(task_id=None):
                 flash(f'仕事「{new_task.name}」を追加しました。')
             db.session.commit()
             return redirect(url_for('manage_tasks'))
-    tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+    tasks = Task.query.order_by(Task.order_index, Task.id).all()
     return render_template('admin_tasks.html', tasks=tasks, form=form)
 
 @app.route('/admin/skill_stats')
@@ -445,7 +439,7 @@ def skill_stats():
     """スキル習得率統計ページ（管理者専用）"""
     # 'admin'ユーザー以外のユーザーと全タスクを取得
     users = User.query.filter(User.username != 'admin').all()
-    tasks = Task.query.order_by(Task.level, Task.order_index, Task.id).all()
+    tasks = Task.query.order_by(Task.order_index, Task.id).all()
     
     # スキル習得率を計算
     skill_statistics = []
@@ -574,15 +568,6 @@ def init_database():
         except Exception as e:
             print(f"Note: order_index update skipped: {e}")
         
-        # 既存タスクのlevelを設定（NULLの場合）
-        try:
-            tasks_without_level = Task.query.filter(Task.level.is_(None)).all()
-            if tasks_without_level:
-                print(f"Setting level for {len(tasks_without_level)} tasks...")
-                for task in tasks_without_level:
-                    task.level = 1
-        except Exception as e:
-            print(f"Note: level update skipped: {e}")
         
         # 設定を初期化（存在しない場合のみ）
         if not Settings.query.filter_by(key='skill_visibility').first():
