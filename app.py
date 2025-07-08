@@ -542,6 +542,76 @@ def admin_settings():
     
     return render_template('admin_settings.html', form=form)
 
+@app.route('/admin/migrate_data', methods=['POST'])
+@admin_required
+def migrate_data():
+    """データ移行エンドポイント"""
+    try:
+        # データベースからデータを取得
+        import json
+        
+        # 全データを取得
+        users_data = []
+        for user in User.query.all():
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'password_hash': user.password_hash,
+                'role': user.role,
+                'is_first_login': user.is_first_login,
+                'order_index': user.order_index
+            })
+        
+        tasks_data = []
+        for task in Task.query.all():
+            tasks_data.append({
+                'id': task.id,
+                'name': task.name,
+                'order_index': task.order_index
+            })
+        
+        user_skills_data = []
+        for skill in UserSkill.query.all():
+            user_skills_data.append({
+                'id': skill.id,
+                'user_id': skill.user_id,
+                'task_id': skill.task_id,
+                'can_do': skill.can_do
+            })
+        
+        settings_data = []
+        for setting in Settings.query.all():
+            settings_data.append({
+                'id': setting.id,
+                'key': setting.key,
+                'value': setting.value
+            })
+        
+        # JSONデータを作成
+        migration_data = {
+            'users': users_data,
+            'tasks': tasks_data,
+            'user_skills': user_skills_data,
+            'settings': settings_data
+        }
+        
+        # Supabaseに移行（この部分は実際のSupabase設定に応じて調整）
+        if os.environ.get('DATABASE_URL') and 'supabase.com' in os.environ.get('DATABASE_URL', ''):
+            # 既にSupabase環境の場合
+            flash('現在のデータベースは既にSupabaseです。移行は不要です。')
+        else:
+            # 移行データをJSONファイルとして保存（手動移行用）
+            with open('migration_data.json', 'w', encoding='utf-8') as f:
+                json.dump(migration_data, f, ensure_ascii=False, indent=2)
+            
+            flash(f'データ移行の準備が完了しました。移行データ: ユーザー {len(users_data)}件、タスク {len(tasks_data)}件、スキル {len(user_skills_data)}件')
+        
+        return redirect(url_for('admin_settings'))
+        
+    except Exception as e:
+        flash(f'データ移行エラー: {str(e)}')
+        return redirect(url_for('admin_settings'))
+
 
 # -----------------------------------------------------------
 # 6. アプリケーションの実行と初期設定
@@ -617,11 +687,11 @@ def create_sample_data():
 if __name__ == '__main__':
     print("🚀 アプリケーションを起動しています...")
     
-    # データベース初期化の実行（エラーが発生した場合は停止）
-    if os.environ.get('SKIP_DB_INIT') != 'true':
-        print("📊 データベース初期化中...")
-        try:
-            with app.app_context():
+    try:
+        with app.app_context():
+            # 環境変数でサンプルデータ作成を制御
+            if os.environ.get('SKIP_DB_INIT') != 'true':
+                print("📊 データベース初期化中...")
                 init_database()
                 
                 # Supabase接続テスト（簡素化）
@@ -636,24 +706,12 @@ if __name__ == '__main__':
                 # 開発環境でサンプルデータを作成
                 if os.environ.get('CREATE_SAMPLE_DATA') == 'true' or not os.environ.get('DATABASE_URL'):
                     create_sample_data()
-                    
-        except Exception as e:
-            print(f"❌ データベース初期化エラー: {e}")
-            # 本番環境では初期化エラーがあっても続行
-            if os.environ.get('DATABASE_URL'):
-                print("⚠️ 本番環境のため続行します")
             else:
-                raise  # 開発環境では停止
-    else:
-        print("Database initialization skipped.")
+                print("Database initialization skipped.")
+    except Exception as e:
+        print(f"⚠️ 初期化エラー（続行します）: {e}")
             
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     print(f"🌐 サーバーを起動中... ポート: {port}")
-    
-    # アプリケーション起動
-    try:
-        app.run(host='0.0.0.0', port=port, debug=debug)
-    except Exception as e:
-        print(f"❌ アプリケーション起動エラー: {e}")
-        raise
+    app.run(host='0.0.0.0', port=port, debug=debug)
