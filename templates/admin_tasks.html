@@ -10,11 +10,19 @@
       
       <!-- モバイル用カード表示 -->
       <div class="mobile-task-cards" id="mobile-task-list">
+        {% set current_level = None %}
         {% for task in tasks %}
+        {% if task.level != current_level %}
+          {% set current_level = task.level %}
+          <div class="level-header">
+            <h3>レベル{{ task.level }}</h3>
+          </div>
+        {% endif %}
         <div class="task-card" data-task-id="{{ task.id }}">
           <div class="task-header">
             <div class="task-info">
               <h3>{{ task.name }}</h3>
+              <span class="level-badge">レベル{{ task.level }}</span>
             </div>
             <div class="mobile-order-controls">
               <button onclick="moveTaskMobile({{ task.id }}, 'up')" class="btn-order" {% if loop.first %}disabled{% endif %}>↑</button>
@@ -40,13 +48,24 @@
             <thead>
               <tr>
                 <th>現在の仕事内容</th>
+                <th>レベル</th>
                 <th colspan="3">操作</th>
               </tr>
             </thead>
             <tbody id="desktop-task-list">
+              {% set current_level = None %}
               {% for task in tasks %}
+              {% if task.level != current_level %}
+                {% set current_level = task.level %}
+                <tr class="level-separator">
+                  <td colspan="6" class="level-header-row">
+                    <strong>レベル{{ task.level }}</strong>
+                  </td>
+                </tr>
+              {% endif %}
               <tr data-task-id="{{ task.id }}">
                 <td style="text-align: left; padding-left: 10px;">{{ task.name }}</td>
+                <td style="text-align: center;">レベル{{ task.level }}</td>
                 <td style="width: 60px;">
                   <button onclick="moveTaskDesktop({{ task.id }}, 'up')" class="btn btn-small" {% if loop.first %}disabled{% endif %}>↑</button>
                 </td>
@@ -82,6 +101,10 @@
         <div class="form-group">
           {{ form.name.label }}
           {{ form.name() }}
+        </div>
+        <div class="form-group">
+          {{ form.level.label }}
+          {{ form.level() }}
         </div>
         {{ form.submit(class="btn btn-custom-primary-small") }}
       </form>
