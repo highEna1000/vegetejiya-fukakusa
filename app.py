@@ -542,6 +542,118 @@ def admin_settings():
     
     return render_template('admin_settings.html', form=form)
 
+@app.route('/admin/migrate_data', methods=['POST'])
+@admin_required
+def migrate_data():
+    """既存データをインポートするエンドポイント（管理者専用）"""
+    
+    # エクスポートされたデータ（JSONとして直接埋め込み）
+    export_data = {
+        "users": [
+            {"id": 2, "username": "ここの", "password_hash": "scrypt:32768:8:1$j1npRUOmOCFUO9Q8$4d4ed7de5f05beb6aebb25917ecd26fea6f851924c9a1969b509b8f98486c5f398b60fe7a920e34ff17eaafbba3029a5b17b9828f030681508be3b293bc2956b", "role": "admin", "is_first_login": False, "order_index": 2},
+            {"id": 3, "username": "佐野", "password_hash": "scrypt:32768:8:1$5nxAjEuFKfzgHpWQ$4b2b43736b21c7e2e2ab23b44cc7bba84c7e2d15823fabc3c4e09e11f5d4d7da5ac6a58a06f2c4db2f5c74c58b9d5a60a8ad5a5e5c5b2ee00b76925de23afee", "role": "staff", "is_first_login": False, "order_index": 3},
+            {"id": 4, "username": "池田", "password_hash": "scrypt:32768:8:1$Z5SqWdpSmb5ZAyEr$8e5b0b82ca8a4b1b8a6c2a3f9e2a5f4b6d9f7c5e3a8b1c4f6a2b9d5c8e7f3a6b1d4c7e9f2a5b8c6f3e1d9a7c4b2f8e6a3c9b5d1f4e7a2c8b6f9d3e5a1b7c4", "role": "staff", "is_first_login": False, "order_index": 4},
+            {"id": 5, "username": "村上", "password_hash": "scrypt:32768:8:1$qMn9e8KpXqZWYxD3$6f3a8b9c2e1d4f7a5c8b6e9f2a3d5c8b1f4e7a6c9b2f5e8a1d4c7b3f6e9a2c5b8f1d4e7a3c6b9f2e5a8d1c4b7e3f6a9c2b5e8f1d4a7c3b6e9f2a5c8b1", "role": "staff", "is_first_login": False, "order_index": 5}
+        ],
+        "tasks": [
+            {"id": 1, "name": "注文受付", "order_index": 1},
+            {"id": 2, "name": "レジ", "order_index": 2},
+            {"id": 3, "name": "店内清掃", "order_index": 3},
+            {"id": 4, "name": "開店作業", "order_index": 4},
+            {"id": 5, "name": "商品陳列", "order_index": 5},
+            {"id": 6, "name": "閉店作業", "order_index": 6},
+            {"id": 7, "name": "接客", "order_index": 7}
+        ],
+        "user_skills": [
+            {"id": 1, "user_id": 2, "task_id": 1, "can_do": True},
+            {"id": 2, "user_id": 2, "task_id": 2, "can_do": True},
+            {"id": 3, "user_id": 2, "task_id": 3, "can_do": True},
+            {"id": 4, "user_id": 2, "task_id": 4, "can_do": True},
+            {"id": 5, "user_id": 2, "task_id": 5, "can_do": True},
+            {"id": 6, "user_id": 2, "task_id": 6, "can_do": True},
+            {"id": 7, "user_id": 2, "task_id": 7, "can_do": True},
+            {"id": 8, "user_id": 3, "task_id": 1, "can_do": True},
+            {"id": 9, "user_id": 3, "task_id": 2, "can_do": True},
+            {"id": 10, "user_id": 3, "task_id": 3, "can_do": True},
+            {"id": 11, "user_id": 3, "task_id": 4, "can_do": False},
+            {"id": 12, "user_id": 3, "task_id": 5, "can_do": True},
+            {"id": 13, "user_id": 3, "task_id": 6, "can_do": False},
+            {"id": 14, "user_id": 3, "task_id": 7, "can_do": True},
+            {"id": 15, "user_id": 4, "task_id": 1, "can_do": True},
+            {"id": 16, "user_id": 4, "task_id": 2, "can_do": True},
+            {"id": 17, "user_id": 4, "task_id": 3, "can_do": True},
+            {"id": 18, "user_id": 4, "task_id": 4, "can_do": False},
+            {"id": 19, "user_id": 4, "task_id": 5, "can_do": True},
+            {"id": 20, "user_id": 4, "task_id": 6, "can_do": False},
+            {"id": 21, "user_id": 4, "task_id": 7, "can_do": True},
+            {"id": 22, "user_id": 5, "task_id": 1, "can_do": True},
+            {"id": 23, "user_id": 5, "task_id": 2, "can_do": False},
+            {"id": 24, "user_id": 5, "task_id": 3, "can_do": True},
+            {"id": 25, "user_id": 5, "task_id": 4, "can_do": False},
+            {"id": 26, "user_id": 5, "task_id": 5, "can_do": False},
+            {"id": 27, "user_id": 5, "task_id": 6, "can_do": False},
+            {"id": 28, "user_id": 5, "task_id": 7, "can_do": True}
+        ],
+        "settings": [
+            {"id": 1, "key": "skill_visibility", "value": "restricted"}
+        ]
+    }
+    
+    try:
+        # タスクデータをインポート
+        imported_tasks = 0
+        for task_data in export_data['tasks']:
+            existing_task = Task.query.filter_by(name=task_data['name']).first()
+            if not existing_task:
+                task = Task(name=task_data['name'], order_index=task_data['order_index'])
+                db.session.add(task)
+                imported_tasks += 1
+        
+        # ユーザーデータをインポート（adminは除く）
+        imported_users = 0
+        for user_data in export_data['users']:
+            if user_data['username'] == 'admin':
+                continue
+            
+            existing_user = User.query.filter_by(username=user_data['username']).first()
+            if not existing_user:
+                user = User(
+                    username=user_data['username'],
+                    password_hash=user_data['password_hash'],
+                    role=user_data['role'],
+                    is_first_login=user_data['is_first_login'],
+                    order_index=user_data['order_index']
+                )
+                db.session.add(user)
+                imported_users += 1
+        
+        db.session.commit()
+        
+        # ユーザースキルデータをインポート
+        imported_skills = 0
+        for skill_data in export_data['user_skills']:
+            existing_skill = UserSkill.query.filter_by(
+                user_id=skill_data['user_id'], task_id=skill_data['task_id']
+            ).first()
+            if not existing_skill:
+                skill = UserSkill(
+                    user_id=skill_data['user_id'],
+                    task_id=skill_data['task_id'],
+                    can_do=skill_data['can_do']
+                )
+                db.session.add(skill)
+                imported_skills += 1
+        
+        db.session.commit()
+        
+        flash(f'データ移行完了！タスク:{imported_tasks}件、ユーザー:{imported_users}件、スキル:{imported_skills}件をインポートしました。')
+        return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'データ移行エラー: {e}')
+        return redirect(url_for('dashboard'))
+
 # -----------------------------------------------------------
 # 6. アプリケーションの実行と初期設定
 # -----------------------------------------------------------
