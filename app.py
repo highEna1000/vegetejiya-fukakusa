@@ -619,6 +619,24 @@ if __name__ == '__main__':
         if os.environ.get('SKIP_DB_INIT') != 'true':
             init_database()
             
+            # Supabase接続テスト
+            if os.environ.get('DATABASE_URL') and 'supabase.com' in os.environ.get('DATABASE_URL', ''):
+                print("🔄 Supabase環境を検出しました")
+                try:
+                    # 基本的な接続テスト
+                    user_count = User.query.count()
+                    task_count = Task.query.count()
+                    skill_count = UserSkill.query.count()
+                    setting_count = Settings.query.count()
+                    print(f"✅ Supabase接続成功！")
+                    print(f"📊 現在のデータ:")
+                    print(f"- ユーザー: {user_count}件")
+                    print(f"- タスク: {task_count}件")
+                    print(f"- スキル: {skill_count}件")
+                    print(f"- 設定: {setting_count}件")
+                except Exception as e:
+                    print(f"❌ Supabase接続エラー: {e}")
+            
             # 開発環境でサンプルデータを作成
             if os.environ.get('CREATE_SAMPLE_DATA') == 'true' or not os.environ.get('DATABASE_URL'):
                 create_sample_data()
