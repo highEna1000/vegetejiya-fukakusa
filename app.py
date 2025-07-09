@@ -22,6 +22,15 @@ if os.environ.get('DATABASE_URL'):
     if database_url.startswith('postgresql://'):
         database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    
+    # Supabase接続制限対策のためのプール設定
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_size': 1,        # 同時接続数を1に制限
+        'pool_timeout': 20,    # 接続タイムアウト
+        'pool_recycle': 1800,  # 30分で接続をリサイクル
+        'max_overflow': 0,     # オーバーフロー接続を無効化
+        'pool_pre_ping': True  # 接続前にpingテスト
+    }
 else:
     # 開発環境: SQLite
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -32,6 +41,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+# データベース接続管理
+@app.teardown_appcontext
+def close_db(error):
+    """アプリケーションコンテキスト終了時にデータベース接続をクローズ"""
+    if error:
+        db.session.rollback()
+    if hasattr(db, 'session'):
+        db.session.close()
 
 
 # -----------------------------------------------------------
