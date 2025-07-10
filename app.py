@@ -23,12 +23,12 @@ if os.environ.get('DATABASE_URL'):
         database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     
-    # Supabase接続制限対策のためのプール設定（18人同時接続対応）
+    # Supabase接続制限対策のためのプール設定（30人同時接続対応）
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_size': 5,        # 基本接続プールサイズ
+        'pool_size': 10,       # 基本接続プールサイズ
         'pool_timeout': 30,    # 接続タイムアウト（30秒）
         'pool_recycle': 1800,  # 30分で接続をリサイクル
-        'max_overflow': 15,    # 最大15の追加接続（合計20接続）
+        'max_overflow': 25,    # 最大25の追加接続（合計35接続）
         'pool_pre_ping': True  # 接続前にpingテスト
     }
 else:
