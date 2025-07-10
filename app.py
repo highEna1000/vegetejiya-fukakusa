@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_wtf import FlaskForm
+from flask_wtf.csrf import generate_csrf
 from wtforms import StringField, PasswordField, SubmitField, SelectField, BooleanField
 from wtforms.validators import DataRequired, EqualTo, Length, Optional
 from functools import wraps
@@ -41,6 +42,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
+# CSRFトークン関数をテンプレートで使用可能にする
+@app.template_global()
+def csrf_token():
+    """CSRFトークンを生成"""
+    return generate_csrf()
 
 # データベース接続管理
 @app.teardown_appcontext
