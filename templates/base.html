@@ -294,6 +294,7 @@
             {% endif %}
           </div>
           <div class="nav-right">
+            <a href="{{ url_for('change_password') }}">パスワード変更</a>
             <a href="{{ url_for('logout') }}">ログアウト ({{ current_user.username }})</a>
           </div>
         {% endif %}

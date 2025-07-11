@@ -134,6 +134,12 @@ class SettingsForm(FlaskForm):
                                    validators=[DataRequired()])
     submit = SubmitField('設定を保存')
 
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('現在のパスワード', validators=[DataRequired()])
+    new_password = PasswordField('新しいパスワード', validators=[DataRequired(), Length(min=4, message='パスワードは4文字以上で入力してください')])
+    confirm_password = PasswordField('新しいパスワード(確認)', validators=[DataRequired(), EqualTo('new_password', message='パスワードが一致しません')])
+    submit = SubmitField('パスワードを変更')
+
 
 # -----------------------------------------------------------
 # 4. ルーティング (URLと関数の紐付け)
@@ -347,6 +353,25 @@ def my_skills():
             skills_to_edit.append(UserSkill(user_id=current_user.id, task_id=task.id, can_do=False, task=task))
 
     return render_template('my_skills.html', user_to_edit=current_user, skills_to_edit=skills_to_edit)
+
+@app.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """パスワード変更ページ（全ユーザー対象）"""
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        # 現在のパスワードを確認
+        if not current_user.check_password(form.current_password.data):
+            flash('現在のパスワードが正しくありません。')
+            return render_template('change_password.html', form=form)
+        
+        # 新しいパスワードを設定
+        current_user.set_password(form.new_password.data)
+        db.session.commit()
+        flash('パスワードを変更しました。')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('change_password.html', form=form)
 
 # ★★★ ここから新しい関数を追加 ★★★
 @app.route('/admin/edit_user/<int:user_id>', methods=['GET', 'POST'])
